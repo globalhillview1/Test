@@ -8,11 +8,14 @@
     body{font-family:Arial, sans-serif; padding:24px; max-width:720px; margin:auto;}
     h1{color:#004aad}
     label{display:block;margin-top:12px;font-weight:bold}
-    input{width:100%;padding:10px;margin-top:6px}
+    input{width:100%;padding:10px;margin-top:6px;border:1px solid #ccc;border-radius:4px}
     button{margin-top:18px;padding:12px 16px;background:#004aad;color:#fff;border:0;border-radius:6px;cursor:pointer}
+    button:hover{background:#0061e0}
     .muted{color:#555}
     .card{border:1px solid #e5e7eb;border-radius:12px;padding:18px;margin-top:16px;background:#fafafa}
-    .msg{margin-top:14px}
+    .msg{margin-top:14px;font-weight:bold;}
+    .error{color:#d00}
+    .success{color:#006400}
   </style>
 </head>
 <body>
@@ -42,7 +45,10 @@
   </form>
 
 <script>
-const GAS_BASE = "https://script.google.com/macros/s/AKfycb.../exec"; // <— your Web App URL
+/* ==============================
+   CONFIGURATION
+============================== */
+const GAS_BASE = "https://script.google.com/macros/s/AKfycbyX3pX7Sg0G5xbR4o-w5RsIlWWVFQ9TPR1X-eOkpLLBf7ZuoccbwP0R0BpbyrbyE9uv/exec";
 const sn = new URLSearchParams(location.search).get('sn');
 
 const els = {
@@ -53,29 +59,40 @@ const els = {
   msg:    document.getElementById('msg')
 };
 
+/* ==============================
+   LOAD PRODUCT DATA FROM GAS
+============================== */
 async function loadProduct() {
   if (!sn) {
     els.msg.textContent = "Missing serial number (?sn=...)";
+    els.msg.className = "msg error";
     return;
   }
   try {
     const res = await fetch(`${GAS_BASE}?format=json&sn=${encodeURIComponent(sn)}`);
     const { ok, product } = await res.json();
     if (!ok) {
-      els.msg.textContent = "Product not found.";
+      els.msg.textContent = "❌ Product not found.";
+      els.msg.className = "msg error";
       return;
     }
     els.serial.textContent = product['Serial No.'];
     els.model.textContent  = product['Model Name'];
     els.mfg.textContent    = product['Manufacturing Date'];
   } catch (err) {
-    els.msg.textContent = "Error loading product: " + err;
+    els.msg.textContent = "❌ Error loading product: " + err;
+    els.msg.className = "msg error";
   }
 }
 
+/* ==============================
+   SUBMIT REGISTRATION TO GAS
+============================== */
 els.form.addEventListener('submit', async (ev) => {
   ev.preventDefault();
   els.msg.textContent = "Submitting...";
+  els.msg.className = "msg";
+
   const formData = new FormData(els.form);
   const payload = {
     sn,
@@ -84,6 +101,7 @@ els.form.addEventListener('submit', async (ev) => {
     purchase: formData.get('purchase'),
     phone: formData.get('phone')
   };
+
   try {
     const res = await fetch(GAS_BASE, {
       method: 'POST',
@@ -92,13 +110,16 @@ els.form.addEventListener('submit', async (ev) => {
     });
     const data = await res.json();
     if (data.ok) {
-      els.msg.textContent = "✅ Registration saved. Thank you!";
+      els.msg.textContent = "✅ Registration saved successfully!";
+      els.msg.className = "msg success";
       els.form.reset();
     } else {
-      els.msg.textContent = "❌ " + (data.error || 'Submission failed');
+      els.msg.textContent = "❌ " + (data.error || "Submission failed.");
+      els.msg.className = "msg error";
     }
   } catch (err) {
     els.msg.textContent = "❌ Network error: " + err;
+    els.msg.className = "msg error";
   }
 });
 
