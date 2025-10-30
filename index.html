@@ -2,32 +2,107 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title><?= company ?> Product Registration</title>
+  <title>Inpod Fans Product Registration</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
-    body { font-family: Arial; padding: 40px; }
-    h2 { color: #004aad; }
-    label { display: block; margin-top: 12px; font-weight: bold; }
-    input { width: 100%; padding: 8px; margin-top: 4px; }
-    button { margin-top: 20px; padding: 10px 20px; background: #004aad; color: white; border: none; border-radius: 5px; }
+    body{font-family:Arial, sans-serif; padding:24px; max-width:720px; margin:auto;}
+    h1{color:#004aad}
+    label{display:block;margin-top:12px;font-weight:bold}
+    input{width:100%;padding:10px;margin-top:6px}
+    button{margin-top:18px;padding:12px 16px;background:#004aad;color:#fff;border:0;border-radius:6px;cursor:pointer}
+    .muted{color:#555}
+    .card{border:1px solid #e5e7eb;border-radius:12px;padding:18px;margin-top:16px;background:#fafafa}
+    .msg{margin-top:14px}
   </style>
 </head>
 <body>
-  <? if (product) { ?>
-    <h2><?= company ?> Product Registration</h2>
-    <p><b>Serial No.:</b> <?= product['Serial No.'] ?><br>
-    <b>Model Name:</b> <?= product['Model Name'] ?><br>
-    <b>Manufacturing Date:</b> <?= product['Manufacturing Date'] ?></p>
+  <h1>Inpod Fans Product Registration</h1>
 
-    <form method="post">
-      <input type="hidden" name="sn" value="<?= product['Serial No.'] ?>">
-      <label>Dealer Name</label><input type="text" name="dealer" required>
-      <label>Customer Name</label><input type="text" name="customer" required>
-      <label>Purchase Date</label><input type="date" name="purchase" required>
-      <label>Phone No.</label><input type="tel" name="phone" pattern="[0-9]{10}" required>
-      <button type="submit">Submit Registration</button>
-    </form>
-  <? } else { ?>
-    <h2>Product not found</h2>
-  <? } ?>
+  <div class="card">
+    <div><b>Serial No.:</b> <span id="serial" class="muted">—</span></div>
+    <div><b>Model Name:</b> <span id="model" class="muted">—</span></div>
+    <div><b>Manufacturing Date:</b> <span id="mfg" class="muted">—</span></div>
+  </div>
+
+  <form id="regForm" class="card">
+    <label>Dealer Name</label>
+    <input name="dealer" required>
+
+    <label>Customer Name</label>
+    <input name="customer" required>
+
+    <label>Purchase Date</label>
+    <input name="purchase" type="date" required>
+
+    <label>Phone No.</label>
+    <input name="phone" type="tel" pattern="[0-9]{10}" placeholder="10-digit number" required>
+
+    <button type="submit">Submit Registration</button>
+    <div id="msg" class="msg"></div>
+  </form>
+
+<script>
+const GAS_BASE = "https://script.google.com/macros/s/AKfycb.../exec"; // <— your Web App URL
+const sn = new URLSearchParams(location.search).get('sn');
+
+const els = {
+  serial: document.getElementById('serial'),
+  model:  document.getElementById('model'),
+  mfg:    document.getElementById('mfg'),
+  form:   document.getElementById('regForm'),
+  msg:    document.getElementById('msg')
+};
+
+async function loadProduct() {
+  if (!sn) {
+    els.msg.textContent = "Missing serial number (?sn=...)";
+    return;
+  }
+  try {
+    const res = await fetch(`${GAS_BASE}?format=json&sn=${encodeURIComponent(sn)}`);
+    const { ok, product } = await res.json();
+    if (!ok) {
+      els.msg.textContent = "Product not found.";
+      return;
+    }
+    els.serial.textContent = product['Serial No.'];
+    els.model.textContent  = product['Model Name'];
+    els.mfg.textContent    = product['Manufacturing Date'];
+  } catch (err) {
+    els.msg.textContent = "Error loading product: " + err;
+  }
+}
+
+els.form.addEventListener('submit', async (ev) => {
+  ev.preventDefault();
+  els.msg.textContent = "Submitting...";
+  const formData = new FormData(els.form);
+  const payload = {
+    sn,
+    dealer: formData.get('dealer'),
+    customer: formData.get('customer'),
+    purchase: formData.get('purchase'),
+    phone: formData.get('phone')
+  };
+  try {
+    const res = await fetch(GAS_BASE, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    if (data.ok) {
+      els.msg.textContent = "✅ Registration saved. Thank you!";
+      els.form.reset();
+    } else {
+      els.msg.textContent = "❌ " + (data.error || 'Submission failed');
+    }
+  } catch (err) {
+    els.msg.textContent = "❌ Network error: " + err;
+  }
+});
+
+loadProduct();
+</script>
 </body>
 </html>
