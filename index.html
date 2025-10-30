@@ -2,133 +2,50 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>Inpod Fans Product Registration</title>
+  <title><?= company ?> | Registration</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
-    body{font-family:Arial, sans-serif; padding:24px; max-width:720px; margin:auto;}
-    h1{color:#004aad}
+    body{font-family:Arial, sans-serif; padding:24px; max-width:720px; margin:auto; background:#fff;}
+    h2{color:#004aad}
+    .card{background:#f8fafc;border:1px solid #e5e7eb;border-radius:12px;padding:18px;margin-top:16px;}
     label{display:block;margin-top:12px;font-weight:bold}
-    input{width:100%;padding:10px;margin-top:6px;border:1px solid #ccc;border-radius:4px}
-    button{margin-top:18px;padding:12px 16px;background:#004aad;color:#fff;border:0;border-radius:6px;cursor:pointer}
-    button:hover{background:#0061e0}
-    .muted{color:#555}
-    .card{border:1px solid #e5e7eb;border-radius:12px;padding:18px;margin-top:16px;background:#fafafa}
-    .msg{margin-top:14px;font-weight:bold;}
-    .error{color:#d00}
-    .success{color:#006400}
+    input{width:100%;padding:10px;margin-top:6px;border:1px solid #cbd5e1;border-radius:6px}
+    button{margin-top:18px;padding:12px 16px;background:#004aad;color:#fff;border:0;border-radius:8px;cursor:pointer}
+    button:hover{background:#0b5ed7}
+    .muted{color:#475569}
   </style>
 </head>
 <body>
-  <h1>Inpod Fans Product Registration</h1>
+  <? if (product) { ?>
+    <h2><?= company ?> Product Registration</h2>
 
-  <iframe
-  src="https://script.google.com/macros/s/AKfycbyX3pX7Sg0G5xbR4o-w5RsIlWWVFQ9TPR1X-eOkpLLBf7ZuoccbwP0R0BpbyrbyE9uv/exec?sn=IFN0000000001"
-  width="100%" height="1100" style="border:0; max-width:900px; display:block; margin:0 auto;">
-</iframe>
-  
-  <div class="card">
-    <div><b>Serial No.:</b> <span id="serial" class="muted">—</span></div>
-    <div><b>Model Name:</b> <span id="model" class="muted">—</span></div>
-    <div><b>Manufacturing Date:</b> <span id="mfg" class="muted">—</span></div>
-  </div>
+    <div class="card">
+      <div><b>Serial No.:</b> <?= product['Serial No.'] ?></div>
+      <div><b>Model Name:</b> <?= product['Model Name'] ?></div>
+      <div><b>Manufacturing Date:</b> <?= product['Manufacturing Date'] ?></div>
+    </div>
 
-  <form id="regForm" class="card">
-    <label>Dealer Name</label>
-    <input name="dealer" required>
+    <form method="post" class="card">
+      <input type="hidden" name="sn" value="<?= product['Serial No.'] ?>">
 
-    <label>Customer Name</label>
-    <input name="customer" required>
+      <label>Dealer Name</label>
+      <input name="dealer" value="<?= product['Dealer Name'] ?>" required>
 
-    <label>Purchase Date</label>
-    <input name="purchase" type="date" required>
+      <label>Customer Name</label>
+      <input name="customer" value="<?= product['Customer Name'] ?>" required>
 
-    <label>Phone No.</label>
-    <input name="phone" type="tel" pattern="[0-9]{10}" placeholder="10-digit number" required>
+      <label>Purchase Date</label>
+      <input name="purchase" type="date" value="<?= product['Purchase Date'] ?>" required>
 
-    <button type="submit">Submit Registration</button>
-    <div id="msg" class="msg"></div>
-  </form>
+      <label>Phone No.</label>
+      <input name="phone" type="tel" pattern="[0-9]{10}" placeholder="10-digit number"
+             value="<?= product['Phone No.'] ?>" required>
 
-<script>
-/* ==============================
-   CONFIGURATION
-============================== */
-const GAS_BASE = "https://script.google.com/macros/s/AKfycbyX3pX7Sg0G5xbR4o-w5RsIlWWVFQ9TPR1X-eOkpLLBf7ZuoccbwP0R0BpbyrbyE9uv/exec";
-const sn = new URLSearchParams(location.search).get('sn');
-
-const els = {
-  serial: document.getElementById('serial'),
-  model:  document.getElementById('model'),
-  mfg:    document.getElementById('mfg'),
-  form:   document.getElementById('regForm'),
-  msg:    document.getElementById('msg')
-};
-
-/* ==============================
-   LOAD PRODUCT DATA FROM GAS
-============================== */
-async function loadProduct() {
-  if (!sn) {
-    els.msg.textContent = "Missing serial number (?sn=...)";
-    els.msg.className = "msg error";
-    return;
-  }
-  try {
-    const res = await fetch(`${GAS_BASE}?format=json&sn=${encodeURIComponent(sn)}`);
-    const { ok, product } = await res.json();
-    if (!ok) {
-      els.msg.textContent = "❌ Product not found.";
-      els.msg.className = "msg error";
-      return;
-    }
-    els.serial.textContent = product['Serial No.'];
-    els.model.textContent  = product['Model Name'];
-    els.mfg.textContent    = product['Manufacturing Date'];
-  } catch (err) {
-    els.msg.textContent = "❌ Error loading product: " + err;
-    els.msg.className = "msg error";
-  }
-}
-
-/* ==============================
-   SUBMIT REGISTRATION TO GAS
-============================== */
-els.form.addEventListener('submit', async (ev) => {
-  ev.preventDefault();
-  els.msg.textContent = "Submitting...";
-  els.msg.className = "msg";
-
-  const formData = new FormData(els.form);
-  const payload = {
-    sn,
-    dealer: formData.get('dealer'),
-    customer: formData.get('customer'),
-    purchase: formData.get('purchase'),
-    phone: formData.get('phone')
-  };
-
-  try {
-    const res = await fetch(GAS_BASE, {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify(payload)
-    });
-    const data = await res.json();
-    if (data.ok) {
-      els.msg.textContent = "✅ Registration saved successfully!";
-      els.msg.className = "msg success";
-      els.form.reset();
-    } else {
-      els.msg.textContent = "❌ " + (data.error || "Submission failed.");
-      els.msg.className = "msg error";
-    }
-  } catch (err) {
-    els.msg.textContent = "❌ Network error: " + err;
-    els.msg.className = "msg error";
-  }
-});
-
-loadProduct();
-</script>
+      <button type="submit">Submit Registration</button>
+    </form>
+  <? } else { ?>
+    <h2>Product not found</h2>
+    <p class="muted">Invalid or missing serial number.</p>
+  <? } ?>
 </body>
 </html>
