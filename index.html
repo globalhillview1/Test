@@ -2,43 +2,32 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title><?= company ?> | Product Registration</title>
+  <title><?= company ?> Product Registration</title>
   <style>
-    body { font-family: Arial, sans-serif; margin:40px; color:#222; }
-    h2 { color:#004aad; }
-    form { max-width:500px; }
-    label { display:block; margin-top:12px; font-weight:bold; }
-    input { width:100%; padding:8px; margin-top:4px; }
-    button { margin-top:20px; padding:10px 16px; background:#004aad; color:#fff; border:none; border-radius:6px; cursor:pointer; }
-    button:hover { background:#0063e5; }
+    body { font-family: Arial; padding: 40px; }
+    h2 { color: #004aad; }
+    label { display: block; margin-top: 12px; font-weight: bold; }
+    input { width: 100%; padding: 8px; margin-top: 4px; }
+    button { margin-top: 20px; padding: 10px 20px; background: #004aad; color: white; border: none; border-radius: 5px; }
   </style>
 </head>
 <body>
   <? if (product) { ?>
-    <h2>Inpod Fans Product Registration</h2>
-    <p><strong>Serial No.:</strong> <?= product['Serial No.'] ?><br>
-       <strong>Model Name:</strong> <?= product['Model Name'] ?><br>
-       <strong>Manufacturing Date:</strong> <?= product['Manufacturing Date'] ?></p>
+    <h2><?= company ?> Product Registration</h2>
+    <p><b>Serial No.:</b> <?= product['Serial No.'] ?><br>
+    <b>Model Name:</b> <?= product['Model Name'] ?><br>
+    <b>Manufacturing Date:</b> <?= product['Manufacturing Date'] ?></p>
 
     <form method="post">
       <input type="hidden" name="sn" value="<?= product['Serial No.'] ?>">
-      <label>Dealer Name</label>
-      <input type="text" name="dealer" required>
-
-      <label>Customer Name</label>
-      <input type="text" name="customer" required>
-
-      <label>Purchase Date</label>
-      <input type="date" name="purchase" required>
-
-      <label>Phone No.</label>
-      <input type="tel" name="phone" pattern="[0-9]{10}" placeholder="10-digit number" required>
-
+      <label>Dealer Name</label><input type="text" name="dealer" required>
+      <label>Customer Name</label><input type="text" name="customer" required>
+      <label>Purchase Date</label><input type="date" name="purchase" required>
+      <label>Phone No.</label><input type="tel" name="phone" pattern="[0-9]{10}" required>
       <button type="submit">Submit Registration</button>
     </form>
   <? } else { ?>
     <h2>Product not found</h2>
-    <p>Invalid or missing serial number.</p>
   <? } ?>
 </body>
 </html>
