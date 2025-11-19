@@ -214,49 +214,60 @@ const firebaseConfig = {
             verifyBtn.disabled = true;
 
 confirmationResult.confirm(otp)
-                .then((result) => {
-                    // OTP successful! Collect and submit form data.
-                    const formData = {
-                        sn: document.querySelector('input[name="sn"]').value,
-                        dealer: document.getElementById('dealer-input').value,
-                        customer: document.getElementById('customer-input').value,
-                        purchase: document.getElementById('purchase-input').value,
-                        phone: document.getElementById('phone-input').value,
-                    };
-                    
-                    const execUrl = document.querySelector('input[name="execUrl"]').value;
+    .then((result) => {
+        // OTP successful! Collect and submit form data.
+        const formData = {
+            sn: document.querySelector('input[name="sn"]').value,
+            dealer: document.getElementById('dealer-input').value,
+            customer: document.getElementById('customer-input').value,
+            purchase: document.getElementById('purchase-input').value,
+            phone: document.getElementById('phone-input').value,
+        };
+        
+        const execUrl = document.querySelector('input[name="execUrl"]').value;
 
-                    fetch(execUrl, {
-                        method: 'POST',
-                        mode: 'no-cors',
-                        headers: {
-                            'Content-Type': 'application/x-www-form-urlencoded',
-                        },
-                        body: new URLSearchParams({
-                            action: 'saveRegistration',
-                            data: JSON.stringify(formData)
-                        })
-                    })
-                    .then(() => {
-                        // WARNING: Due to 'no-cors', we cannot read the server's JSON response, 
-                        // so we must assume success here and rely on server-side error checking.
-                        // We pass a minimal success object back to onSuccessRegistration
-                        onSuccessRegistration({ 
-                            success: true, 
-                            sn: formData.sn, 
-                            purchaseDDMMYYYY: formData.purchase 
-                        });
-                    })
-                    .catch(error => {
-                        // This catch block handles network errors (e.g., URL unreachable)
-                        onFailureRegistration({ message: 'Network error during submission.' });
-                    });
+        // FIX 2: Removed 'no-cors' and added logic to read the JSON response.
+        fetch(execUrl, {
+            method: 'POST',
+            // mode: 'cors' is now implied since we removed 'no-cors'
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: new URLSearchParams({
+                action: 'saveRegistration',
+                data: JSON.stringify(formData)
+            })
+        })
+        .then(response => {
+            // Check for network errors
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            // Read the JSON content sent back by the Apps Script doPost(e)
+            return response.json(); 
+        })
+        .then(result => {
+            // Process the Apps Script result (which contains success: true/false)
+            onSuccessRegistration(result);
+        })
+        .catch(error => {
+            // This handles network errors, or if the response wasn't valid JSON
+            onFailureRegistration({ message: 'Submission failed: ' + error.message });
+        });
 
-                })
-                .catch((error) => {
-                    // ... (Original Firebase verification error handling)
-                });
-        });
+    })
+    .catch((error) => {
+        // Handle Firebase OTP verification failure
+        verifyBtn.innerText = 'Verify & Register';
+        verifyBtn.disabled = false;
+        let errorMsg = error.message || "OTP verification failed.";
+        if (error.code === 'auth/invalid-verification-code') {
+            errorMsg = 'Invalid verification code.';
+        }
+        displayClientError('Verification Error: ' + errorMsg);
+        console.error("Verification Error:", error);
+    });
+});
 
         // --- Apps Script Callbacks ---
         function onSuccessRegistration(result) {
@@ -279,7 +290,7 @@ confirmationResult.confirm(otp)
                 `;
                 document.body.innerHTML = successHtml; // Replace content
             } else {
-                // Server-side validation failed (e.g., already registered)
+                // Server-side validation failed (e.g., already registered, script error)
                 displayClientError('Registration failed: ' + result.msg);
                 verifyBtn.disabled = false; // Re-enable button
             }
@@ -289,7 +300,7 @@ confirmationResult.confirm(otp)
             const verifyBtn = document.getElementById('verify-otp-btn');
             verifyBtn.innerText = 'Verify & Register';
             verifyBtn.disabled = false;
-            displayClientError('Server Error during saving: ' + error.message);
+            displayClientError('Server Error during submission: ' + error.message);
         }
     </script>
 </body>
