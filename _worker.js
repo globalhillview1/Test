@@ -1,5 +1,5 @@
 // _worker.js
-const GAS_API = 'https://script.google.com/macros/s/AKfycbyX3pX7Sg0G5xbR4o-w5RsIlWWVFQ9TPR1X-eOkpLLBf7ZuoccbwP0R0BpbyrbyE9uv/exec';
+const GAS_API = 'https://script.google.com/macros/s/AKfycbxWZMc0-PryiANB17mDYOka4zelS2KBrYNWYiV5ght6JgFbkLLfmZnwQtSTFg2TRB2KEw/exec';
 
 function cors(h = new Headers()) {
   h.set('Access-Control-Allow-Origin', '*');
