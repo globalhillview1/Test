@@ -1,32 +1,281 @@
 <!doctype html>
 <html>
 <head>
-  <meta charset="utf-8">
-  <title>Inpod Fans Product Registration</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <style>
-    body{font-family:Arial, sans-serif; padding:24px; max-width:900px; margin:auto;}
-    h1{color:#004aad; text-align:center;}
-    iframe{width:100%; height:1100px; border:0; border-radius:12px; background:#f8fafc;}
-  </style>
+    <meta charset="utf-8">
+    <title><?= company ?> Product Registration</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    
+    <style>
+        body{font-family:Arial, sans-serif; padding:24px; max-width:720px; margin:auto;}
+        h2{color:#0a58ca; text-align:center;}
+        .card{background:#f8fafc;border:1px solid #e5e7eb;border-radius:12px;padding:18px;margin-top:16px;}
+        label{display:block;margin-top:12px;font-weight:bold}
+        input{width:100%;padding:10px;margin-top:6px;border:1px solid #cbd5e1;border-radius:6px; box-sizing: border-box;}
+        button{margin-top:18px;padding:12px 16px;background:#0a58ca;color:#fff;border:0;border-radius:8px;cursor:pointer}
+        button:hover{background:#0b5ed7}
+        .muted{color:#475569}
+        .error{margin:16px 0;padding:10px;background:#fef2f2;border:1px solid #fca5a5;color:#b91c1c;border-radius:6px;}
+        
+        /* OTP specific styling */
+        #otp-input-group{display: none;}
+        #phone-input-group {position: relative;}
+        #send-otp-btn {
+            position: absolute; right: 6px; top: 40px; 
+            padding: 5px 10px; margin: 0; 
+            border-radius: 4px; 
+            background: #4ade80; color: #000;
+            border: 1px solid #16a34a;
+            cursor: pointer;
+            width: auto;
+            text-transform: uppercase;
+            font-size: 0.9em;
+            line-height: 1.5;
+        }
+        #send-otp-btn:disabled {
+            background: #ccc;
+            color: #666;
+            border: 1px solid #999;
+            cursor: not-allowed;
+        }
+        #phone-input { padding-right: 110px; }
+    </style>
 </head>
 <body>
-  <h1>Inpod Fans Product Registration</h1>
+    <h2><?= company ?> Product Registration</h2>
 
-  <!-- The iframe embeds your Apps Script web app -->
-  <iframe id="inpodForm"
-          src="about:blank"
-          allow="clipboard-write *; clipboard-read *">
-  </iframe>
+    <? if (errorMsg) { ?>
+        <div class="card error" id="server-error"><?= errorMsg ?></div>
+    <? } ?>
 
-  <script>
-    // Your GAS web app URL:
-    const GAS_EXEC = "https://script.google.com/macros/s/AKfycbyX3pX7Sg0G5xbR4o-w5RsIlWWVFQ9TPR1X-eOkpLLBf7ZuoccbwP0R0BpbyrbyE9uv/exec";
-    // Get serial from this page's query string (?sn=...)
-    const sn = new URLSearchParams(location.search).get('sn') || '';
-    // Build iframe target
-    const target = sn ? `${GAS_EXEC}?sn=${encodeURIComponent(sn)}` : GAS_EXEC;
-    document.getElementById('inpodForm').src = target;
-  </script>
+    <? if (product) { ?>
+        <div class="card">
+            <div><b>Serial No.:</b> <?= product['Serial No.'] ?></div>
+            <div><b>Model Name:</b> <?= product['Model Name'] ?></div>
+            <div><b>Manufacturing Date:</b> <?= product['Manufacturing Date'] ?></div>
+        </div>
+
+        <form id="registration-form" class="card">
+            <input type="hidden" name="sn" value="<?= product['Serial No.'] ?>">
+            <input type="hidden" name="execUrl" value="<?= execUrl ?>">
+
+            <label>Dealer Name</label>
+            <input name="dealer" id="dealer-input" required>
+
+            <label>Customer Name</label>
+            <input name="customer" id="customer-input" required>
+
+            <label>Purchase Date</label>
+            <input name="purchase" id="purchase-input" type="date" required>
+            
+            <div id="phone-input-group">
+                <label>Phone No. (Include Country Code, e.g., +919876543210)</label>
+                <input name="phone" id="phone-input" type="tel" placeholder="e.g., +91..." required>
+                <button type="button" id="send-otp-btn" disabled>Loading...</button>
+            </div>
+            
+            <div id="otp-input-group">
+                <label>Verification Code (OTP)</label>
+                <input name="otp" id="otp-input" type="text" placeholder="6-digit code" required>
+                <button type="button" id="verify-otp-btn">Verify & Register</button>
+            </div>
+
+            <div id="recaptcha-container"></div>
+            
+            <div class="error" id="client-error" style="display:none;"></div>
+        </form>
+    <? } else if (!errorMsg) { ?>
+        <div class="card">Add <code>?sn=IFN0000000001</code> to the URL to begin registration.</div>
+    <? } ?>
+
+    <script>
+        // 🚨 REPLACE THESE WITH YOUR ACTUAL FIREBASE CONFIGURATION 🚨
+const firebaseConfig = {
+  apiKey: "AIzaSyDPmJeMMeaZWKcKs5A5f__gYcIbtWLx3Wo",
+  authDomain: "qwiklabs-gcp-00-702ed02e93c3.firebaseapp.com",
+  projectId: "qwiklabs-gcp-00-702ed02e93c3",
+  storageBucket: "qwiklabs-gcp-00-702ed02e93c3.firebasestorage.app",
+  messagingSenderId: "474280913740",
+  appId: "1:474280913740:web:edb3c0cd0f6163f1453de9",
+  measurementId: "G-3MV4352N2Z"
+};
+
+        let confirmationResult;
+        let auth;
+        
+        // Helper function to show client errors
+        function displayClientError(message) {
+            const errorDiv = document.getElementById('client-error');
+            errorDiv.innerHTML = message;
+            errorDiv.style.display = message ? 'block' : 'none';
+        }
+
+        // Initialize Firebase and reCAPTCHA when the page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            // Check if config exists and attempt initialization
+            if (firebaseConfig && firebaseConfig.apiKey) {
+                try {
+                    // FIX: Use the correct variable name firebaseConfig
+                    const app = firebase.initializeApp(firebaseConfig);
+                    auth = app.auth();
+                    
+                    // RECOMMENDED: Enable the button on successful initialization
+                    document.getElementById('send-otp-btn').disabled = false;
+                    document.getElementById('send-otp-btn').innerText = 'Send OTP';
+
+                    window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
+                        'size': 'invisible',
+                        'callback': (response) => {
+                            console.log("Invisible reCAPTCHA solved.");
+                        },
+                        'expired-callback': () => {
+                            displayClientError("Security check expired. Please refresh.");
+                        }
+                    });
+
+                    // Render reCAPTCHA
+                    recaptchaVerifier.render().catch(err => {
+                        displayClientError("Error initializing Firebase security check.");
+                        console.error("Recaptcha Render Error:", err);
+                    });
+                } catch (err) {
+                    // Initialization failed
+                    displayClientError("🚨 Firebase initialization failed. Check console for details.");
+                    console.error("Firebase Init Error:", err);
+                }
+            } else {
+                displayClientError("🚨 ERROR: Firebase configuration is missing or empty.");
+            }
+        });
+
+        // --- Step 1: Send OTP ---
+        document.getElementById('send-otp-btn').addEventListener('click', () => {
+            const phoneNumber = document.getElementById('phone-input').value.trim();
+            const sendBtn = document.getElementById('send-otp-btn');
+            
+            // Check if 'auth' object is ready
+            if (!auth || !auth.signInWithPhoneNumber) {
+                displayClientError("Firebase Auth is not ready. Please wait or refresh.");
+                return;
+            }
+            if (!phoneNumber || !phoneNumber.startsWith('+')) {
+                displayClientError("Please enter the full phone number starting with '+' (e.g., +91...).");
+                return;
+            }
+
+            displayClientError(''); 
+            sendBtn.innerText = 'Sending...';
+            sendBtn.disabled = true;
+
+            const appVerifier = window.recaptchaVerifier;
+
+            auth.signInWithPhoneNumber(phoneNumber, appVerifier)
+                .then((result) => {
+                    confirmationResult = result;
+                    document.getElementById('phone-input-group').style.display = 'none';
+                    document.getElementById('otp-input-group').style.display = 'block';
+                    document.getElementById('otp-input').focus();
+                    displayClientError(`Verification code sent to ${phoneNumber}.`);
+                })
+                .catch((error) => {
+                    sendBtn.innerText = 'Send OTP';
+                    sendBtn.disabled = false;
+                    
+                    let errorMsg = error.message || "Failed to send OTP.";
+                    if (error.code === 'auth/invalid-phone-number') {
+                        errorMsg = 'Invalid phone number format.';
+                    } else if (error.code === 'auth/captcha-check-failed') {
+                        errorMsg = 'Security check failed. Please refresh or try later.';
+                    }
+                    displayClientError('Error sending OTP: ' + errorMsg);
+                    console.error("OTP Error:", error);
+                });
+        });
+
+
+        // --- Step 2: Verify OTP and Submit Data to Apps Script ---
+        document.getElementById('verify-otp-btn').addEventListener('click', () => {
+            const otp = document.getElementById('otp-input').value.trim();
+            const verifyBtn = document.getElementById('verify-otp-btn');
+
+            if (!otp || otp.length !== 6) {
+                displayClientError("Please enter the 6-digit verification code.");
+                return;
+            }
+            if (!confirmationResult) {
+                displayClientError("Verification flow not started. Click 'Send OTP' first.");
+                return;
+            }
+
+            displayClientError('');
+            verifyBtn.innerText = 'Verifying...';
+            verifyBtn.disabled = true;
+
+            confirmationResult.confirm(otp)
+                .then((result) => {
+                    // OTP successful! Collect and submit form data to Apps Script.
+                    const formData = {
+                        sn: document.querySelector('input[name="sn"]').value,
+                        dealer: document.getElementById('dealer-input').value,
+                        customer: document.getElementById('customer-input').value,
+                        purchase: document.getElementById('purchase-input').value,
+                        phone: document.getElementById('phone-input').value,
+                    };
+                    
+                    // Call the server-side Apps Script function (Code.gs: saveRegistration_)
+                    google.script.run
+                        .withSuccessHandler(onSuccessRegistration)
+                        .withFailureHandler(onFailureRegistration)
+                        .saveRegistration(formData);
+
+                })
+                .catch((error) => {
+                    verifyBtn.innerText = 'Verify & Register';
+                    verifyBtn.disabled = false;
+                    let errorMsg = error.message || "Failed to verify code.";
+                    if (error.code === 'auth/invalid-verification-code') {
+                        errorMsg = 'The code is incorrect or expired.';
+                    }
+                    displayClientError('Verification Error: ' + errorMsg);
+                    console.error("Verification Error:", error);
+                });
+        });
+
+        // --- Apps Script Callbacks ---
+        function onSuccessRegistration(result) {
+            const verifyBtn = document.getElementById('verify-otp-btn');
+            verifyBtn.innerText = 'Verify & Register';
+            verifyBtn.disabled = false;
+            
+            if (result.success) {
+                // Render success message using the data returned from the server
+                const successHtml = `
+                    <div style="font-family:Arial,sans-serif;max-width:640px;margin:40px auto;text-align:center">
+                        <h2 style="color:#0a58ca;margin-bottom:8px;">✅ Registration Successful</h2>
+                        <p>Thank you! Your product has been registered.</p>
+                        <p><b>Serial:</b> ${result.sn}<br><b>Purchase Date:</b> ${result.purchaseDDMMYYYY}</p>
+                        <a href="?sn=${encodeURIComponent(result.sn)}"
+                            style="display:inline-block;margin-top:16px;padding:10px 14px;background:#0a58ca;color:#fff;text-decoration:none;border-radius:8px;">
+                            Back to Product
+                        </a>
+                    </div>
+                `;
+                document.body.innerHTML = successHtml; // Replace content
+            } else {
+                // Server-side validation failed (e.g., already registered)
+                displayClientError('Registration failed: ' + result.msg);
+                verifyBtn.disabled = false; // Re-enable button
+            }
+        }
+
+        function onFailureRegistration(error) {
+            const verifyBtn = document.getElementById('verify-otp-btn');
+            verifyBtn.innerText = 'Verify & Register';
+            verifyBtn.disabled = false;
+            displayClientError('Server Error during saving: ' + error.message);
+        }
+    </script>
 </body>
 </html>
