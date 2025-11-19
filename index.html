@@ -537,11 +537,23 @@
                     })
                 });
 
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+                console.log('Response status:', response.status);
+                console.log('Response headers:', [...response.headers.entries()]);
+
+                // Read the response as text first to see what we got
+                const responseText = await response.text();
+                console.log('Raw response:', responseText);
+
+                // Try to parse as JSON
+                let result;
+                try {
+                    result = JSON.parse(responseText);
+                } catch (parseErr) {
+                    console.error('JSON parse error:', parseErr);
+                    throw new Error('Server returned invalid JSON: ' + responseText.substring(0, 100));
                 }
 
-                const result = await response.json();
+                console.log('Parsed result:', result);
 
                 if (result.success) {
                     showSuccessPage(result);
