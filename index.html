@@ -224,12 +224,18 @@ const firebaseConfig = {
                         phone: document.getElementById('phone-input').value,
                     };
                     
-                    // Call the server-side Apps Script function (Code.gs: saveRegistration_)
-                    google.script.run
-                        .withSuccessHandler(onSuccessRegistration)
-                        .withFailureHandler(onFailureRegistration)
-                        .saveRegistration(formData);
+// ✅ WITH THIS NEW HTTP FETCH BLOCK ✅
+            const execUrl = document.querySelector('input[name="execUrl"]').value;
 
+            fetch(execUrl, {
+                method: 'POST',
+                mode: 'no-cors', // Essential for GAS API endpoint
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: new URLSearchParams({
+                    action: 'saveRegistration', // New parameter for GAS to identify the action
+                    data: JSON.stringify(formData) // Send form data as a JSON string
                 })
                 .catch((error) => {
                     verifyBtn.innerText = 'Verify & Register';
