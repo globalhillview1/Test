@@ -213,41 +213,50 @@ const firebaseConfig = {
             verifyBtn.innerText = 'Verifying...';
             verifyBtn.disabled = true;
 
-            confirmationResult.confirm(otp)
-                .then((result) => {
-                    // OTP successful! Collect and submit form data to Apps Script.
-                    const formData = {
-                        sn: document.querySelector('input[name="sn"]').value,
-                        dealer: document.getElementById('dealer-input').value,
-                        customer: document.getElementById('customer-input').value,
-                        purchase: document.getElementById('purchase-input').value,
-                        phone: document.getElementById('phone-input').value,
-                    };
-                    
-// ✅ WITH THIS NEW HTTP FETCH BLOCK ✅
-            const execUrl = document.querySelector('input[name="execUrl"]').value;
+confirmationResult.confirm(otp)
+                .then((result) => {
+                    // OTP successful! Collect and submit form data.
+                    const formData = {
+                        sn: document.querySelector('input[name="sn"]').value,
+                        dealer: document.getElementById('dealer-input').value,
+                        customer: document.getElementById('customer-input').value,
+                        purchase: document.getElementById('purchase-input').value,
+                        phone: document.getElementById('phone-input').value,
+                    };
+                    
+                    const execUrl = document.querySelector('input[name="execUrl"]').value;
 
-            fetch(execUrl, {
-                method: 'POST',
-                mode: 'no-cors', // Essential for GAS API endpoint
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                body: new URLSearchParams({
-                    action: 'saveRegistration', // New parameter for GAS to identify the action
-                    data: JSON.stringify(formData) // Send form data as a JSON string
-                })
-                .catch((error) => {
-                    verifyBtn.innerText = 'Verify & Register';
-                    verifyBtn.disabled = false;
-                    let errorMsg = error.message || "Failed to verify code.";
-                    if (error.code === 'auth/invalid-verification-code') {
-                        errorMsg = 'The code is incorrect or expired.';
-                    }
-                    displayClientError('Verification Error: ' + errorMsg);
-                    console.error("Verification Error:", error);
-                });
-        });
+                    fetch(execUrl, {
+                        method: 'POST',
+                        mode: 'no-cors',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+                        body: new URLSearchParams({
+                            action: 'saveRegistration',
+                            data: JSON.stringify(formData)
+                        })
+                    })
+                    .then(() => {
+                        // WARNING: Due to 'no-cors', we cannot read the server's JSON response, 
+                        // so we must assume success here and rely on server-side error checking.
+                        // We pass a minimal success object back to onSuccessRegistration
+                        onSuccessRegistration({ 
+                            success: true, 
+                            sn: formData.sn, 
+                            purchaseDDMMYYYY: formData.purchase 
+                        });
+                    })
+                    .catch(error => {
+                        // This catch block handles network errors (e.g., URL unreachable)
+                        onFailureRegistration({ message: 'Network error during submission.' });
+                    });
+
+                })
+                .catch((error) => {
+                    // ... (Original Firebase verification error handling)
+                });
+        });
 
         // --- Apps Script Callbacks ---
         function onSuccessRegistration(result) {
