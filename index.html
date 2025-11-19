@@ -5,8 +5,9 @@
     <title><?= company ?> Product Registration</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <!-- FIX 1: Updated Firebase SDK versions to a slightly later version of the v9 compatibility layer to address potential internal SDK bugs -->
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-auth-compat.js"></script>
     
     <style>
         body{font-family:Arial, sans-serif; padding:24px; max-width:720px; margin:auto;}
@@ -59,6 +60,7 @@
 
         <form id="registration-form" class="card">
             <input type="hidden" name="sn" value="<?= product['Serial No.'] ?>">
+            <!-- FIX 1: Using the Cloudflare Worker proxy path -->
             <input type="hidden" name="execUrl" value="/api">
 
             <label>Dealer Name</label>
@@ -93,16 +95,18 @@
     <script>
         // 🚨 REPLACE THESE WITH YOUR ACTUAL FIREBASE CONFIGURATION 🚨
 const firebaseConfig = {
-  apiKey: "AIzaSyDtFCmxbKZkIVbGQq1MeaBi3LX_ZwwxQPw",
-  authDomain: "qwiklabs-gcp-02-c513531d9244.firebaseapp.com",
-  projectId: "qwiklabs-gcp-02-c513531d9244",
-  storageBucket: "qwiklabs-gcp-02-c513531d9244.firebasestorage.app",
-  messagingSenderId: "321730961118",
-  appId: "1:321730961118:web:d5dd35356db2ef771dac4f"
+  apiKey: "AIzaSyDPmJeMMeaZWKcKs5A5f__gYcIbtWLx3Wo",
+  authDomain: "qwiklabs-gcp-00-702ed02e93c3.firebaseapp.com",
+  projectId: "qwiklabs-gcp-00-702ed02e93c3",
+  storageBucket: "qwiklabs-gcp-00-702ed02e93c3.firebasestorage.app",
+  messagingSenderId: "474280913740",
+  appId: "1:474280913740:web:edb3c0cd0f6163f1453de9",
+  measurementId: "G-3MV4352N2Z"
 };
 
         let confirmationResult;
         let auth;
+        let firebaseApp;
         
         // Helper function to show client errors
         function displayClientError(message) {
@@ -116,11 +120,10 @@ const firebaseConfig = {
             // Check if config exists and attempt initialization
             if (firebaseConfig && firebaseConfig.apiKey) {
                 try {
-                    // FIX: Use the correct variable name firebaseConfig
-                    const app = firebase.initializeApp(firebaseConfig);
-                    auth = app.auth();
+                    // Store the app instance
+                    firebaseApp = firebase.initializeApp(firebaseConfig);
+                    auth = firebaseApp.auth();
                     
-                    // RECOMMENDED: Enable the button on successful initialization
                     document.getElementById('send-otp-btn').disabled = false;
                     document.getElementById('send-otp-btn').innerText = 'Send OTP';
 
@@ -134,14 +137,14 @@ const firebaseConfig = {
                         }
                     });
 
-                    // Render reCAPTCHA
-                    recaptchaVerifier.render().catch(err => {
-                        displayClientError("Error initializing Firebase security check.");
-                        console.error("Recaptcha Render Error:", err);
-                    });
+                    // Check if the verifier object was created successfully
+                    if (!window.recaptchaVerifier) {
+                        displayClientError("🚨 Failed to create reCAPTCHA object. Check the 'recaptcha-container' ID.");
+                    }
+                    
                 } catch (err) {
                     // Initialization failed
-                    displayClientError("🚨 Firebase initialization failed. Check console for details.");
+                    displayClientError("🚨 Firebase initialization failed. Check console for details. (Check config keys)");
                     console.error("Firebase Init Error:", err);
                 }
             } else {
@@ -154,7 +157,6 @@ const firebaseConfig = {
             const phoneNumber = document.getElementById('phone-input').value.trim();
             const sendBtn = document.getElementById('send-otp-btn');
             
-            // Check if 'auth' object is ready
             if (!auth || !auth.signInWithPhoneNumber) {
                 displayClientError("Firebase Auth is not ready. Please wait or refresh.");
                 return;
@@ -163,6 +165,11 @@ const firebaseConfig = {
                 displayClientError("Please enter the full phone number starting with '+' (e.g., +91...).");
                 return;
             }
+            if (!window.recaptchaVerifier) {
+                 displayClientError("Security check not initialized. Cannot send OTP.");
+                 return;
+            }
+
 
             displayClientError(''); 
             sendBtn.innerText = 'Sending...';
@@ -170,7 +177,26 @@ const firebaseConfig = {
 
             const appVerifier = window.recaptchaVerifier;
 
-            auth.signInWithPhoneNumber(phoneNumber, appVerifier)
+            // Aggressive FIX attempt for auth/internal-error
+            // Force the underlying Firebase app to be reset before starting the flow.
+            // This is a last resort client-side fix for tricky environment errors.
+            if (firebaseApp && firebaseApp.delete) {
+                firebaseApp.delete().then(() => {
+                    firebaseApp = firebase.initializeApp(firebaseConfig);
+                    auth = firebaseApp.auth();
+                    startPhoneNumberSignIn(phoneNumber, appVerifier, sendBtn);
+                }).catch(err => {
+                    console.error("Failed to delete/re-initialize Firebase app:", err);
+                    // If deletion fails, proceed with the original auth object
+                    startPhoneNumberSignIn(phoneNumber, appVerifier, sendBtn); 
+                });
+            } else {
+                startPhoneNumberSignIn(phoneNumber, appVerifier, sendBtn);
+            }
+        });
+
+        function startPhoneNumberSignIn(phoneNumber, appVerifier, sendBtn) {
+             auth.signInWithPhoneNumber(phoneNumber, appVerifier)
                 .then((result) => {
                     confirmationResult = result;
                     document.getElementById('phone-input-group').style.display = 'none';
@@ -182,16 +208,23 @@ const firebaseConfig = {
                     sendBtn.innerText = 'Send OTP';
                     sendBtn.disabled = false;
                     
+                    // FIX 2: Explicitly clear the reCAPTCHA widget on error to prevent state issues
+                    if (window.recaptchaVerifier && window.recaptchaVerifier.clear) {
+                        window.recaptchaVerifier.clear();
+                    }
+                    
                     let errorMsg = error.message || "Failed to send OTP.";
                     if (error.code === 'auth/invalid-phone-number') {
                         errorMsg = 'Invalid phone number format.';
                     } else if (error.code === 'auth/captcha-check-failed') {
                         errorMsg = 'Security check failed. Please refresh or try later.';
+                    } else if (error.code === 'auth/internal-error') {
+                        errorMsg = 'Internal Firebase Error. This usually means **Phone Auth is not enabled** or the **domain is not whitelisted** in your Firebase Console.';
                     }
                     displayClientError('Error sending OTP: ' + errorMsg);
                     console.error("OTP Error:", error);
                 });
-        });
+        }
 
 
         // --- Step 2: Verify OTP and Submit Data to Apps Script ---
@@ -212,61 +245,61 @@ const firebaseConfig = {
             verifyBtn.innerText = 'Verifying...';
             verifyBtn.disabled = true;
 
-confirmationResult.confirm(otp)
-    .then((result) => {
-        // OTP successful! Collect and submit form data.
-        const formData = {
-            sn: document.querySelector('input[name="sn"]').value,
-            dealer: document.getElementById('dealer-input').value,
-            customer: document.getElementById('customer-input').value,
-            purchase: document.getElementById('purchase-input').value,
-            phone: document.getElementById('phone-input').value,
-        };
-        
-        const execUrl = document.querySelector('input[name="execUrl"]').value;
+            confirmationResult.confirm(otp)
+                .then((result) => {
+                    // OTP successful! Collect and submit form data.
+                    const formData = {
+                        sn: document.querySelector('input[name="sn"]').value,
+                        dealer: document.getElementById('dealer-input').value,
+                        customer: document.getElementById('customer-input').value,
+                        purchase: document.getElementById('purchase-input').value,
+                        phone: document.getElementById('phone-input').value,
+                    };
+                    
+                    const execUrl = document.querySelector('input[name="execUrl"]').value;
 
-        // FIX 2: Removed 'no-cors' and added logic to read the JSON response.
-        fetch(execUrl, {
-            method: 'POST',
-            // mode: 'cors' is now implied since we removed 'no-cors'
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-            },
-            body: new URLSearchParams({
-                action: 'saveRegistration',
-                data: JSON.stringify(formData)
-            })
-        })
-        .then(response => {
-            // Check for network errors
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            // Read the JSON content sent back by the Apps Script doPost(e)
-            return response.json(); 
-        })
-        .then(result => {
-            // Process the Apps Script result (which contains success: true/false)
-            onSuccessRegistration(result);
-        })
-        .catch(error => {
-            // This handles network errors, or if the response wasn't valid JSON
-            onFailureRegistration({ message: 'Submission failed: ' + error.message });
+                    // Corrected fetch logic to read JSON response via the proxy
+                    fetch(execUrl, {
+                        method: 'POST',
+                        // mode: 'cors' is now implied since we are using the worker proxy
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+                        body: new URLSearchParams({
+                            action: 'saveRegistration',
+                            data: JSON.stringify(formData)
+                        })
+                    })
+                    .then(response => {
+                        // Check for network errors (including the 500 status from the server)
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                        // Read the JSON content sent back by the Apps Script doPost(e)
+                        return response.json(); 
+                    })
+                    .then(result => {
+                        // Process the Apps Script result (which contains success: true/false)
+                        onSuccessRegistration(result);
+                    })
+                    .catch(error => {
+                        // This handles network errors, JSON parsing errors, or the HTTP error status
+                        onFailureRegistration({ message: 'Submission failed: ' + error.message });
+                    });
+
+                })
+                .catch((error) => {
+                    // Handle Firebase OTP verification failure
+                    verifyBtn.innerText = 'Verify & Register';
+                    verifyBtn.disabled = false;
+                    let errorMsg = error.message || "OTP verification failed.";
+                    if (error.code === 'auth/invalid-verification-code') {
+                        errorMsg = 'Invalid verification code.';
+                    }
+                    displayClientError('Verification Error: ' + errorMsg);
+                    console.error("Verification Error:", error);
+                });
         });
-
-    })
-    .catch((error) => {
-        // Handle Firebase OTP verification failure
-        verifyBtn.innerText = 'Verify & Register';
-        verifyBtn.disabled = false;
-        let errorMsg = error.message || "OTP verification failed.";
-        if (error.code === 'auth/invalid-verification-code') {
-            errorMsg = 'Invalid verification code.';
-        }
-        displayClientError('Verification Error: ' + errorMsg);
-        console.error("Verification Error:", error);
-    });
-});
 
         // --- Apps Script Callbacks ---
         function onSuccessRegistration(result) {
@@ -281,8 +314,7 @@ confirmationResult.confirm(otp)
                         <h2 style="color:#0a58ca;margin-bottom:8px;">✅ Registration Successful</h2>
                         <p>Thank you! Your product has been registered.</p>
                         <p><b>Serial:</b> ${result.sn}<br><b>Purchase Date:</b> ${result.purchaseDDMMYYYY}</p>
-                        <a href="?sn=${encodeURIComponent(result.sn)}"
-                            style="display:inline-block;margin-top:16px;padding:10px 14px;background:#0a58ca;color:#fff;text-decoration:none;border-radius:8px;">
+                        <a href="?sn=${encodeURIComponent(result.sn)}"\n                            style="display:inline-block;margin-top:16px;padding:10px 14px;background:#0a58ca;color:#fff;text-decoration:none;border-radius:8px;">
                             Back to Product
                         </a>
                     </div>
