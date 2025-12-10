@@ -51,9 +51,10 @@
     input:focus {
       outline: none;
       border-color: #667eea;
-      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+      box-shadow: 0 0 0 3px rgba(102,126,234,0.1);
     }
     input:disabled { background: #f1f5f9; cursor: not-allowed; }
+
     .btn {
       padding: 12px 24px;
       border: none;
@@ -69,9 +70,10 @@
     .btn-primary:hover:not(:disabled) {
       background: #5568d3;
       transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+      box-shadow: 0 4px 12px rgba(102,126,234,0.4);
     }
     .btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
     .alert {
       padding: 14px 18px;
       border-radius: 8px;
@@ -82,6 +84,7 @@
     .alert-error { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
     .alert-info  { background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; }
     .hidden { display: none; }
+
     .loading { text-align: center; padding: 40px 20px; color: white; }
     .spinner {
       border: 3px solid rgba(255,255,255,0.3);
@@ -96,6 +99,7 @@
       0% { transform: rotate(0deg); }
       100% { transform: rotate(360deg); }
     }
+
     .success-page { text-align: center; padding: 40px 20px; }
     .success-page h2 { color: #10b981; font-size: 32px; margin-bottom: 16px; }
     .success-icon { font-size: 64px; margin-bottom: 20px; }
@@ -109,9 +113,10 @@
     .success-details div { padding: 8px 0; color: #334155; }
   </style>
 
-  <!-- MSG91 WIDGET CONFIG (DEFAULT UI) -->
-  <script type="text/javascript">
-    const API_BASE = 'https://script.google.com/macros/s/AKfycbyhC7ivoWvPm1hYo2VDr9mheEMBkmVFHrIHsxYpDNDH0KNkVNRvBN2DENMW4uWriymr/exec';
+  <!-- MSG91 Widget Config (Default UI) -->
+  <script>
+    const API_BASE =
+      "https://script.google.com/macros/s/AKfycbyhC7ivoWvPm1hYo2VDr9mheEMBkmVFHrIHsxYpDNDH0KNkVNRvBN2DENMW4uWriymr/exec";
 
     let registrationFormData = null;
 
@@ -119,26 +124,27 @@
       widgetId:  "356c6a614a59393139323835",
       tokenAuth: "479874Tz6YZockSUbu69273d6bP1",
       identifier: "",
-      exposeMethods: false,  // default UI
+      exposeMethods: false, // default UI
 
       success: function (data) {
-        console.log('MSG91 success response:', data);
+        console.log("MSG91 success:", data);
 
+        // Extract JWT token (your account sends it in message)
         var accessToken =
           data.accessToken ||
-          data['access-token'] ||
+          data["access-token"] ||
           data.token ||
           (data.response &&
             (data.response.accessToken ||
-             data.response['access-token'] ||
+             data.response["access-token"] ||
              data.response.token)) ||
-          data.message;  // in your case the JWT is here
+          data.message;
 
         if (!accessToken) {
-          alert('Could not read OTP token from MSG91 response.');
-          const btn = document.getElementById('verify-btn');
+          alert("Could not read OTP token from MSG91.");
+          const btn = document.getElementById("verify-btn");
           btn.disabled = false;
-          btn.textContent = 'Verify OTP & Register';
+          btn.textContent = "Verify OTP & Register";
           return;
         }
 
@@ -146,34 +152,29 @@
       },
 
       failure: function (error) {
-        console.log('MSG91 failure:', error);
-        alert('OTP verification failed. Please try again.');
-        const btn = document.getElementById('verify-btn');
+        console.log("MSG91 failure:", error);
+        alert("OTP verification failed. Try again.");
+        const btn = document.getElementById("verify-btn");
         btn.disabled = false;
-        btn.textContent = 'Verify OTP & Register';
+        btn.textContent = "Verify OTP & Register";
       }
     };
 
-    // Load OTP script
+    // Load provider
     (function loadOtpScript(urls) {
-      var i = 0;
+      let i = 0;
       function attempt() {
-        var s = document.createElement('script');
+        const s = document.createElement("script");
         s.src = urls[i];
         s.async = true;
-        s.onload = function () {
-          console.log('Loaded MSG91 OTP script from', urls[i]);
-        };
-        s.onerror = function () {
-          i++;
-          if (i < urls.length) attempt();
-        };
+        s.onload = () => console.log("MSG91 OTP script loaded:", urls[i]);
+        s.onerror = () => { i++; if (i < urls.length) attempt(); };
         document.head.appendChild(s);
       }
       attempt();
     })([
-      'https://verify.msg91.com/otp-provider.js',
-      'https://verify.phone91.com/otp-provider.js'
+      "https://verify.msg91.com/otp-provider.js",
+      "https://verify.phone91.com/otp-provider.js"
     ]);
   </script>
 </head>
@@ -198,31 +199,27 @@
 
       <div class="card">
         <form id="registration-form">
+
           <div class="form-group">
             <label for="dealer-input">Dealer Name *</label>
-            <input type="text" id="dealer-input" name="dealer" required>
+            <input type="text" id="dealer-input" required>
           </div>
 
           <div class="form-group">
             <label for="customer-input">Customer Name *</label>
-            <input type="text" id="customer-input" name="customer" required>
+            <input type="text" id="customer-input" required>
           </div>
 
           <div class="form-group">
             <label for="purchase-input">Purchase Date *</label>
-            <input type="date" id="purchase-input" name="purchase" required>
+            <input type="date" id="purchase-input" required>
           </div>
 
           <div class="form-group">
             <label for="phone-input">Phone Number *</label>
-            <!-- user can type 10-digit or with +91 -->
-            <input
-              type="tel"
-              id="phone-input"
-              name="phone"
-              placeholder="e.g. 9988776655 or +919988776655"
-              required
-            >
+            <input type="tel" id="phone-input"
+                   placeholder="9988776655 or +919988776655"
+                   required>
           </div>
 
           <div id="client-error" class="alert alert-error hidden"></div>
@@ -231,149 +228,133 @@
           <button type="button" id="verify-btn" class="btn btn-primary">
             Verify OTP & Register
           </button>
+
         </form>
       </div>
     </div>
   </div>
 
   <script>
-    function showError(message) {
-      const errorDiv = document.getElementById('client-error');
-      errorDiv.textContent = message;
-      errorDiv.classList.remove('hidden');
-      document.getElementById('client-info').classList.add('hidden');
+    function showError(msg) {
+      const e = document.getElementById("client-error");
+      e.textContent = msg;
+      e.classList.remove("hidden");
+      document.getElementById("client-info").classList.add("hidden");
     }
-    function showInfo(message) {
-      const infoDiv = document.getElementById('client-info');
-      infoDiv.textContent = message;
-      infoDiv.classList.remove('hidden');
-      document.getElementById('client-error').classList.add('hidden');
+
+    function showInfo(msg) {
+      const i = document.getElementById("client-info");
+      i.textContent = msg;
+      i.classList.remove("hidden");
+      document.getElementById("client-error").classList.add("hidden");
     }
+
     function hideMessages() {
-      document.getElementById('client-error').classList.add('hidden');
-      document.getElementById('client-info').classList.add('hidden');
+      document.getElementById("client-error").classList.add("hidden");
+      document.getElementById("client-info").classList.add("hidden");
     }
+
     function getSerialFromURL() {
-      const params = new URLSearchParams(window.location.search);
-      return params.get('sn') || '';
+      return new URLSearchParams(window.location.search).get("sn") || "";
     }
 
     async function loadProduct(serialNo) {
-      if (!serialNo) {
-        document.getElementById('loading-state').classList.add('hidden');
-        document.getElementById('error-state').classList.remove('hidden');
-        document.getElementById('error-message').textContent = 'No serial number provided.';
+      if (!serialNo) return showFatal("No serial number provided.");
+
+      const response = await fetch(`${API_BASE}?sn=${encodeURIComponent(serialNo)}`);
+      const result = await response.json();
+
+      document.getElementById("loading-state").classList.add("hidden");
+
+      if (!result.success) {
+        showFatal(result.msg);
         return;
       }
 
-      try {
-        const response = await fetch(`${API_BASE}?sn=${encodeURIComponent(serialNo)}`);
-        const result   = await response.json();
+      window.currentSerialNo = serialNo;
+      displayProduct(result.product);
+      document.getElementById("main-content").classList.remove("hidden");
+    }
 
-        document.getElementById('loading-state').classList.add('hidden');
-
-        if (result.success && result.product) {
-          window.currentSerialNo = serialNo;
-          displayProduct(result.product);
-          document.getElementById('main-content').classList.remove('hidden');
-        } else {
-          document.getElementById('error-state').classList.remove('hidden');
-          document.getElementById('error-message').textContent =
-            result.msg || 'Product not found';
-        }
-      } catch (error) {
-        document.getElementById('loading-state').classList.add('hidden');
-        document.getElementById('error-state').classList.remove('hidden');
-        document.getElementById('error-message').textContent = 'Error loading product.';
-      }
+    function showFatal(msg) {
+      document.getElementById("error-state").classList.remove("hidden");
+      document.getElementById("error-message").textContent = msg;
     }
 
     function displayProduct(product) {
-      const infoDiv = document.getElementById('product-info');
-      infoDiv.innerHTML = `
-        <div><b>Serial No.:</b> ${product.serialNo || '-'}</div>
-        <div><b>Model Name:</b> ${product.modelName || '-'}</div>
-        <div><b>Manufacturing Date:</b> ${product.manufacturingDate || '-'}</div>
+      document.getElementById("product-info").innerHTML = `
+        <div><b>Serial No.:</b> ${product.serialNo}</div>
+        <div><b>Model Name:</b> ${product.modelName}</div>
+        <div><b>Manufacturing Date:</b> ${product.manufacturingDate}</div>
       `;
     }
 
-    // BUTTON: Verify OTP & Register
-    document.getElementById('verify-btn').addEventListener('click', () => {
+    document.getElementById("verify-btn").addEventListener("click", () => {
       const sn       = window.currentSerialNo;
-      const dealer   = document.getElementById('dealer-input').value.trim();
-      const customer = document.getElementById('customer-input').value.trim();
-      const purchase = document.getElementById('purchase-input').value;
-      let   phone    = document.getElementById('phone-input').value.trim();
-
-      if (!sn || !dealer || !customer || !purchase || !phone) {
-        showError('Please fill in all fields.');
-        return;
-      }
-
-      // Normalise phone:
-      //  - remove + and spaces
-      //  - if 10 digits → assume Indian number and prefix 91
-      phone = phone.replace('+', '').replace(/\s+/g, '');
-
-      if (/^[0-9]{10}$/.test(phone)) {
-        phone = '91' + phone;   // auto-prefix for India
-      }
-
-      // final validation: must now be 12 digits (e.g. 91XXXXXXXXXX)
-      if (!/^[0-9]{12}$/.test(phone)) {
-        showError('Enter a valid Indian mobile number (10 digits) or with +91.');
-        return;
-      }
+      const dealer   = document.getElementById("dealer-input").value.trim();
+      const customer = document.getElementById("customer-input").value.trim();
+      const purchase = document.getElementById("purchase-input").value;
+      let   phone    = document.getElementById("phone-input").value.trim();
 
       hideMessages();
-      const btn = document.getElementById('verify-btn');
-      btn.disabled = true;
-      btn.textContent = 'Opening OTP...';
+
+      if (!sn || !dealer || !customer || !purchase || !phone)
+        return showError("Please fill all fields.");
+
+      // allow 10-digit, 91xxxxxxxxxx, +91xxxxxxxxxx
+      phone = phone.replace(/\D/g, ""); // keep digits only
+      if (phone.length === 10) {
+        showInfo("Sending OTP to +91 " + phone);
+      } else if (phone.length === 12 && phone.startsWith("91")) {
+        phone = phone.slice(2); // convert to 10-digit
+        showInfo("Sending OTP to +91 " + phone);
+      } else {
+        return showError("Enter a valid 10-digit mobile number.");
+      }
 
       registrationFormData = { sn, dealer, customer, purchase, phone };
 
-      configuration.identifier = phone;
+      const btn = document.getElementById("verify-btn");
+      btn.disabled = true;
+      btn.textContent = "Opening OTP...";
 
-      if (typeof window.initSendOTP === 'function') {
+      configuration.identifier = "91" + phone;
+
+      if (typeof window.initSendOTP === "function") {
         window.initSendOTP(configuration);
       } else {
-        showError('OTP system is still loading. Please try again in a moment.');
+        showError("OTP system still loading. Try again.");
         btn.disabled = false;
-        btn.textContent = 'Verify OTP & Register';
+        btn.textContent = "Verify OTP & Register";
       }
     });
 
-    // Called from MSG91 success callback
     async function completeRegistration(accessToken) {
-      const btn = document.getElementById('verify-btn');
-      btn.textContent = 'Submitting...';
+      const btn = document.getElementById("verify-btn");
+      btn.textContent = "Submitting...";
 
-      try {
-        const response = await fetch(API_BASE, {
-          method: 'POST',
-          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify({
-            action: 'saveRegistration',
-            data: Object.assign({}, registrationFormData, {
-              otp_token: accessToken
-            })
-          })
-        });
+      const response = await fetch(API_BASE, {
+        method: "POST",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify({
+          action: "saveRegistration",
+          data: {
+            ...registrationFormData,
+            otp_token: accessToken
+          }
+        })
+      });
 
-        const result = await response.json();
-        console.log('saveRegistration result:', result);
+      const result = await response.json();
+      console.log("saveRegistration result:", result);
 
-        if (!result.success) {
-          throw new Error(result.msg || 'Registration failed');
-        }
-
-        showSuccessPage(result);
-
-      } catch (error) {
+      if (!result.success) {
         btn.disabled = false;
-        btn.textContent = 'Verify OTP & Register';
-        showError('Error: ' + error.message);
+        btn.textContent = "Verify OTP & Register";
+        return showError(result.msg);
       }
+
+      showSuccessPage(result);
     }
 
     function showSuccessPage(result) {
@@ -382,12 +363,11 @@
           <div class="card success-page">
             <div class="success-icon">✅</div>
             <h2>Registration Successful!</h2>
-            <p style="color: #64748b; margin-bottom: 20px;">
-              Your product has been successfully registered.
-            </p>
+            <p style="color:#64748b;">Your product has been registered successfully.</p>
+
             <div class="success-details">
               <div><b>Serial No.:</b> ${result.sn}</div>
-              <div><b>Model:</b> ${result.model || '-'}</div>
+              <div><b>Model:</b> ${result.model}</div>
               <div><b>Purchase Date:</b> ${result.purchaseDDMMYYYY}</div>
             </div>
           </div>
@@ -395,9 +375,9 @@
       `;
     }
 
-    document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener("DOMContentLoaded", () => {
       const serialNo = getSerialFromURL();
-      document.getElementById('loading-state').classList.remove('hidden');
+      document.getElementById("loading-state").classList.remove("hidden");
       loadProduct(serialNo);
     });
   </script>
