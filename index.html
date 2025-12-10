@@ -4,8 +4,9 @@
   <meta charset="utf-8">
   <title>Inpod Fans Product Registration</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
+
   <style>
-    /* your existing styles, unchanged */
+    /* same styling you already use */
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding: 20px; }
     .container { max-width: 640px; margin: 0 auto; }
@@ -19,15 +20,10 @@
     input { width: 100%; padding: 12px 16px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 15px; transition: all 0.3s; font-family: inherit; }
     input:focus { outline: none; border-color: #667eea; box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1); }
     input:disabled { background: #f1f5f9; cursor: not-allowed; }
-    .phone-group { position: relative; }
-    #phone-input { padding-right: 120px; }
     .btn { padding: 12px 24px; border: none; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.3s; font-family: inherit; width: 100%; }
     .btn-primary { background: #667eea; color: white; }
     .btn-primary:hover:not(:disabled) { background: #5568d3; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4); }
     .btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
-    #send-otp-btn { position: absolute; right: 8px; top: 34px; width: auto; padding: 8px 16px; font-size: 13px; background: #10b981; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; transition: all 0.3s; }
-    #send-otp-btn:hover:not(:disabled) { background: #059669; }
-    #send-otp-btn:disabled { background: #cbd5e1; color: #64748b; cursor: not-allowed; }
     .alert { padding: 14px 18px; border-radius: 8px; margin-bottom: 20px; font-size: 14px; line-height: 1.5; }
     .alert-error { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
     .alert-info { background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; }
@@ -40,95 +36,143 @@
     .success-icon { font-size: 64px; margin-bottom: 20px; }
     .success-details { background: #f8fafc; padding: 20px; border-radius: 12px; margin: 20px 0; text-align: left; }
     .success-details div { padding: 8px 0; color: #334155; }
-    @media (max-width: 640px) {
-      h1 { font-size: 24px; }
-      .card { padding: 20px; }
-      #send-otp-btn { position: static; width: 100%; margin-top: 8px; }
-      #phone-input { padding-right: 16px; }
-    }
   </style>
+
+  <!-- MSG91 WIDGET CONFIG -->
+  <script type="text/javascript">
+    // TODO: put your real Apps Script web app URL here
+    const API_BASE = 'YOUR_APPS_SCRIPT_EXEC_URL_HERE';
+
+    // Global, we’ll set this later on button click:
+    let registrationFormData = null;
+
+    // Configuration object from MSG91 integration page (Web SDK for default UI/custom UI)
+    var configuration = {
+      widgetId:  "YOUR_WIDGET_ID_HERE",          // e.g. "356c69716563333436393933"
+      tokenAuth: "YOUR_WIDGET_TOKEN_VALUE_HERE", // e.g. "481615Tecozh9GrG69385efdP1"
+      identifier: "",                            // we will set phone number before init
+      exposeMethods: true,
+      success: function (data) {
+        console.log('MSG91 success response:', data);
+
+        // Most likely token field names
+        var accessToken =
+          data.accessToken ||
+          data['access-token'] ||
+          data.token ||
+          (data.response && (data.response.accessToken || data.response['access-token'] || data.response.token));
+
+        if (!accessToken) {
+          alert('Could not read OTP token from MSG91 response.');
+          document.getElementById('verify-btn').disabled = false;
+          document.getElementById('verify-btn').textContent = 'Verify & Register';
+          return;
+        }
+
+        // If we got the token → call backend to verify + save registration
+        completeRegistration(accessToken);
+      },
+      failure: function (error) {
+        console.log('MSG91 failure:', error);
+        alert('OTP verification failed. Please try again.');
+        const btn = document.getElementById('verify-btn');
+        btn.disabled = false;
+        btn.textContent = 'Verify & Register';
+      },
+      "VAR1": "<VAR1>"
+    };
+
+    // Load OTP script with fallback
+    (function loadOtpScript(urls) {
+      var i = 0;
+      function attempt() {
+        var s = document.createElement('script');
+        s.src = urls[i];
+        s.async = true;
+        s.onload = function () {
+          console.log('Loaded MSG91 OTP script from', urls[i]);
+        };
+        s.onerror = function () {
+          i++;
+          if (i < urls.length) attempt();
+        };
+        document.head.appendChild(s);
+      }
+      attempt();
+    })([
+      'https://verify.msg91.com/otp-provider.js',
+      'https://verify.phone91.com/otp-provider.js'
+    ]);
+  </script>
 </head>
 <body>
   <div class="container">
     <h1>🌀 Inpod Fans Product Registration</h1>
-    
+
     <div id="loading-state" class="loading hidden">
       <div class="spinner"></div>
       <p>Loading product information...</p>
     </div>
-    
+
     <div id="error-state" class="hidden">
       <div class="card">
         <div class="alert alert-error" id="error-message"></div>
       </div>
     </div>
-    
+
     <div id="main-content" class="hidden">
       <div id="product-info" class="card product-info"></div>
-      
+
       <div class="card">
         <form id="registration-form">
           <div class="form-group">
             <label for="dealer-input">Dealer Name *</label>
             <input type="text" id="dealer-input" name="dealer" required>
           </div>
-          
+
           <div class="form-group">
             <label for="customer-input">Customer Name *</label>
             <input type="text" id="customer-input" name="customer" required>
           </div>
-          
+
           <div class="form-group">
             <label for="purchase-input">Purchase Date *</label>
             <input type="date" id="purchase-input" name="purchase" required>
           </div>
-          
-          <div class="form-group phone-group" id="phone-group">
+
+          <div class="form-group">
             <label for="phone-input">Phone Number (with country code) *</label>
             <input type="tel" id="phone-input" name="phone" placeholder="919876543210" required>
-            <button type="button" id="send-otp-btn">Send OTP</button>
           </div>
-          
-          <div class="form-group hidden" id="otp-group">
-            <label for="otp-input">Verification Code (OTP) *</label>
-            <input type="text" id="otp-input" name="otp" placeholder="Enter OTP code" maxlength="6" pattern="[0-9]{4,6}">
-          </div>
-          
+
           <div id="client-error" class="alert alert-error hidden"></div>
           <div id="client-info" class="alert alert-info hidden"></div>
-          
-          <button type="button" id="verify-btn" class="btn btn-primary hidden">Verify & Register</button>
+
+          <button type="button" id="verify-btn" class="btn btn-primary">
+            Verify OTP & Register
+          </button>
         </form>
       </div>
     </div>
   </div>
 
   <script>
-    // Your deployed Apps Script Web App URL (ends with /exec)
-    const API_BASE = 'https://script.google.com/macros/s/AKfycbyhC7ivoWvPm1hYo2VDr9mheEMBkmVFHrIHsxYpDNDH0KNkVNRvBN2DENMW4uWriymr/exec';
-
-    let currentProduct  = null;
-    let currentSerialNo = null;
-
     function showError(message) {
       const errorDiv = document.getElementById('client-error');
       errorDiv.textContent = message;
       errorDiv.classList.remove('hidden');
       document.getElementById('client-info').classList.add('hidden');
     }
-
     function showInfo(message) {
       const infoDiv = document.getElementById('client-info');
       infoDiv.textContent = message;
       infoDiv.classList.remove('hidden');
       document.getElementById('client-error').classList.add('hidden');
     }
-
     function hideMessages() {
       document.getElementById('client-error').classList.add('hidden');
       document.getElementById('client-info').classList.add('hidden');
     }
-
     function getSerialFromURL() {
       const params = new URLSearchParams(window.location.search);
       return params.get('sn') || '';
@@ -149,8 +193,7 @@
         document.getElementById('loading-state').classList.add('hidden');
 
         if (result.success && result.product) {
-          currentProduct  = result.product;
-          currentSerialNo = serialNo;
+          window.currentSerialNo = serialNo;
           displayProduct(result.product);
           document.getElementById('main-content').classList.remove('hidden');
         } else {
@@ -173,124 +216,77 @@
       `;
     }
 
-    // --- SEND OTP ---
+    // BUTTON: Verify OTP & Register
+    document.getElementById('verify-btn').addEventListener('click', () => {
+      const sn       = window.currentSerialNo;
+      const dealer   = document.getElementById('dealer-input').value.trim();
+      const customer = document.getElementById('customer-input').value.trim();
+      const purchase = document.getElementById('purchase-input').value;
+      let   phone    = document.getElementById('phone-input').value.trim();
 
-    document.getElementById('send-otp-btn').addEventListener('click', async () => {
-      let phoneNumber = document.getElementById('phone-input').value.trim();
-      const sendBtn   = document.getElementById('send-otp-btn');
+      if (!sn || !dealer || !customer || !purchase || !phone) {
+        showError('Please fill in all fields.');
+        return;
+      }
 
-      phoneNumber = phoneNumber.replace('+', '').replace(/\s+/g, '');
-
-      if (!phoneNumber || phoneNumber.length < 10) {
+      phone = phone.replace('+', '').replace(/\s+/g, '');
+      if (phone.length < 10) {
         showError('Please enter a valid phone number (e.g., 919876543210)');
         return;
       }
 
       hideMessages();
-      sendBtn.textContent = 'Sending...';
-      sendBtn.disabled    = true;
+      const btn = document.getElementById('verify-btn');
+      btn.disabled = true;
+      btn.textContent = 'Opening OTP...';
+
+      // Save form data globally until we get the token
+      registrationFormData = { sn, dealer, customer, purchase, phone };
+
+      // Tell MSG91 which number to send OTP to
+      configuration.identifier = phone;
+
+      if (typeof window.initSendOTP === 'function') {
+        window.initSendOTP(configuration);
+      } else {
+        showError('OTP system is still loading. Please try again in a moment.');
+        btn.disabled = false;
+        btn.textContent = 'Verify OTP & Register';
+      }
+    });
+
+    // Called from MSG91 success callback with accessToken
+    async function completeRegistration(accessToken) {
+      const btn = document.getElementById('verify-btn');
+      btn.textContent = 'Submitting...';
 
       try {
         const response = await fetch(API_BASE, {
           method: 'POST',
           headers: { 'Content-Type': 'text/plain;charset=utf-8' },
           body: JSON.stringify({
-            action: 'sendOtp',
-            data:   { phone: phoneNumber }
+            action: 'saveRegistration',
+            data: Object.assign({}, registrationFormData, {
+              otp_token: accessToken
+            })
           })
         });
 
         const result = await response.json();
-        console.log('sendOtp result from server:', result);
+        console.log('saveRegistration result:', result);
 
-        if (result.success) {
-          document.getElementById('phone-input').disabled = true;
-          document.getElementById('phone-group').classList.add('hidden');
-          document.getElementById('otp-group').classList.remove('hidden');
-          document.getElementById('verify-btn').classList.remove('hidden');
-          document.getElementById('otp-input').focus();
-          showInfo(`Verification code sent to ${phoneNumber}`);
-        } else {
-          throw new Error(result.msg || 'Failed to send OTP');
+        if (!result.success) {
+          throw new Error(result.msg || 'Registration failed');
         }
+
+        showSuccessPage(result);
 
       } catch (error) {
-        sendBtn.textContent = 'Send OTP';
-        sendBtn.disabled    = false;
-        showError('Error sending OTP: ' + error.message);
-      }
-    });
-
-    // --- VERIFY OTP & REGISTER ---
-
-    document.getElementById('verify-btn').addEventListener('click', async () => {
-      let phoneNumber = document.getElementById('phone-input').value.trim();
-      phoneNumber     = phoneNumber.replace('+', '').replace(/\s+/g, '');
-      const otp       = document.getElementById('otp-input').value.trim();
-      const verifyBtn = document.getElementById('verify-btn');
-
-      if (!otp || otp.length < 4) {
-        showError('Please enter the verification code');
-        return;
-      }
-
-      hideMessages();
-      verifyBtn.textContent = 'Verifying...';
-      verifyBtn.disabled    = true;
-
-      try {
-        // A) Verify OTP
-        const verifyResponse = await fetch(API_BASE, {
-          method: 'POST',
-          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify({
-            action: 'verifyOtp',
-            data:   { phone: phoneNumber, otp: otp }
-          })
-        });
-
-        const verifyResult = await verifyResponse.json();
-        console.log('verifyOtp result from server:', verifyResult);
-
-        if (!verifyResult.success) {
-          throw new Error(verifyResult.msg || 'Invalid OTP');
-        }
-
-        // B) Save registration
-        verifyBtn.textContent = 'Submitting...';
-
-        const formData = {
-          sn:       currentSerialNo,
-          dealer:   document.getElementById('dealer-input').value.trim(),
-          customer: document.getElementById('customer-input').value.trim(),
-          purchase: document.getElementById('purchase-input').value,
-          phone:    phoneNumber
-        };
-
-        const saveResponse = await fetch(API_BASE, {
-          method: 'POST',
-          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify({
-            action: 'saveRegistration',
-            data:   formData
-          })
-        });
-
-        const saveResult = await saveResponse.json();
-        console.log('saveRegistration result:', saveResult);
-
-        if (saveResult.success) {
-          showSuccessPage(saveResult);
-        } else {
-          throw new Error(saveResult.msg || 'Registration failed');
-        }
-
-      } catch (error) {
-        verifyBtn.textContent = 'Verify & Register';
-        verifyBtn.disabled    = false;
+        btn.disabled = false;
+        btn.textContent = 'Verify & Register';
         showError('Error: ' + error.message);
       }
-    });
+    }
 
     function showSuccessPage(result) {
       document.body.innerHTML = `
