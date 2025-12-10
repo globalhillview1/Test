@@ -6,83 +6,158 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <style>
-    /* same styling you already use */
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding: 20px; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
     .container { max-width: 640px; margin: 0 auto; }
-    h1 { color: white; text-align: center; margin-bottom: 30px; font-size: 28px; text-shadow: 0 2px 4px rgba(0,0,0,0.2); }
-    .card { background: white; border-radius: 16px; padding: 24px; margin-bottom: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.15); }
+    h1 {
+      color: white;
+      text-align: center;
+      margin-bottom: 30px;
+      font-size: 28px;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+    .card {
+      background: white;
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 20px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+    }
     .product-info { background: #f8fafc; border-left: 4px solid #667eea; }
     .product-info div { padding: 8px 0; color: #334155; }
     .product-info b { color: #0f172a; min-width: 160px; display: inline-block; }
     .form-group { margin-bottom: 20px; }
-    label { display: block; margin-bottom: 8px; font-weight: 600; color: #1e293b; font-size: 14px; }
-    input { width: 100%; padding: 12px 16px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 15px; transition: all 0.3s; font-family: inherit; }
-    input:focus { outline: none; border-color: #667eea; box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1); }
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+      color: #1e293b;
+      font-size: 14px;
+    }
+    input {
+      width: 100%;
+      padding: 12px 16px;
+      border: 2px solid #e2e8f0;
+      border-radius: 8px;
+      font-size: 15px;
+      transition: all 0.3s;
+      font-family: inherit;
+    }
+    input:focus {
+      outline: none;
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
     input:disabled { background: #f1f5f9; cursor: not-allowed; }
-    .btn { padding: 12px 24px; border: none; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.3s; font-family: inherit; width: 100%; }
+    .btn {
+      padding: 12px 24px;
+      border: none;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      font-family: inherit;
+      width: 100%;
+    }
     .btn-primary { background: #667eea; color: white; }
-    .btn-primary:hover:not(:disabled) { background: #5568d3; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4); }
+    .btn-primary:hover:not(:disabled) {
+      background: #5568d3;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
     .btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
-    .alert { padding: 14px 18px; border-radius: 8px; margin-bottom: 20px; font-size: 14px; line-height: 1.5; }
+    .alert {
+      padding: 14px 18px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      font-size: 14px;
+      line-height: 1.5;
+    }
     .alert-error { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
-    .alert-info { background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; }
+    .alert-info  { background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; }
     .hidden { display: none; }
     .loading { text-align: center; padding: 40px 20px; color: white; }
-    .spinner { border: 3px solid rgba(255,255,255,0.3); border-top: 3px solid white; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto 16px; }
-    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    .spinner {
+      border: 3px solid rgba(255,255,255,0.3);
+      border-top: 3px solid white;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 16px;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
     .success-page { text-align: center; padding: 40px 20px; }
     .success-page h2 { color: #10b981; font-size: 32px; margin-bottom: 16px; }
     .success-icon { font-size: 64px; margin-bottom: 20px; }
-    .success-details { background: #f8fafc; padding: 20px; border-radius: 12px; margin: 20px 0; text-align: left; }
+    .success-details {
+      background: #f8fafc;
+      padding: 20px;
+      border-radius: 12px;
+      margin: 20px 0;
+      text-align: left;
+    }
     .success-details div { padding: 8px 0; color: #334155; }
   </style>
 
-  <!-- MSG91 WIDGET CONFIG -->
+  <!-- MSG91 WIDGET CONFIG (DEFAULT UI) -->
   <script type="text/javascript">
-    // TODO: put your real Apps Script web app URL here
+    // Your deployed Apps Script web app URL:
     const API_BASE = 'https://script.google.com/macros/s/AKfycbyhC7ivoWvPm1hYo2VDr9mheEMBkmVFHrIHsxYpDNDH0KNkVNRvBN2DENMW4uWriymr/exec';
 
-    // Global, we’ll set this later on button click:
+    // Will hold form data while OTP flow happens
     let registrationFormData = null;
 
-    // Configuration object from MSG91 integration page (Web SDK for default UI/custom UI)
+    // Configuration from MSG91 "Web SDK for default UI"
     var configuration = {
-      widgetId:  "356c6a614a59393139323835",          // e.g. "356c69716563333436393933"
-      tokenAuth: "479874Tz6YZockSUbu69273d6bP1", // e.g. "481615Tecozh9GrG69385efdP1"
-      identifier: "",                            // we will set phone number before init
-      exposeMethods: false,
+      widgetId:  "356c6a614a59393139323835",
+      tokenAuth: "479874Tz6YZockSUbu69273d6bP1",
+      identifier: "",           // we’ll set this to the phone number before calling initSendOTP
+      exposeMethods: false,     // default UI – no manual methods required
+
+      // called when OTP has been entered and verified by MSG91
       success: function (data) {
         console.log('MSG91 success response:', data);
 
-        // Most likely token field names
+        // In your account the JWT comes in "message"
         var accessToken =
           data.accessToken ||
           data['access-token'] ||
           data.token ||
-          (data.response && (data.response.accessToken || data.response['access-token'] || data.response.token));
+          (data.response && (data.response.accessToken || data.response['access-token'] || data.response.token)) ||
+          data.message;   // <-- important
 
         if (!accessToken) {
           alert('Could not read OTP token from MSG91 response.');
-          document.getElementById('verify-btn').disabled = false;
-          document.getElementById('verify-btn').textContent = 'Verify & Register';
+          const btn = document.getElementById('verify-btn');
+          btn.disabled = false;
+          btn.textContent = 'Verify OTP & Register';
           return;
         }
 
-        // If we got the token → call backend to verify + save registration
+        // OTP verified by MSG91 → finish registration via backend
         completeRegistration(accessToken);
       },
+
       failure: function (error) {
         console.log('MSG91 failure:', error);
         alert('OTP verification failed. Please try again.');
         const btn = document.getElementById('verify-btn');
         btn.disabled = false;
-        btn.textContent = 'Verify & Register';
-      },
-      "VAR1": "<VAR1>"
+        btn.textContent = 'Verify OTP & Register';
+      }
     };
 
-    // Load OTP script with fallback
+    // Load OTP script (we do NOT auto-call initSendOTP here)
     (function loadOtpScript(urls) {
       var i = 0;
       function attempt() {
@@ -105,6 +180,7 @@
     ]);
   </script>
 </head>
+
 <body>
   <div class="container">
     <h1>🌀 Inpod Fans Product Registration</h1>
@@ -146,7 +222,7 @@
           </div>
 
           <div id="client-error" class="alert alert-error hidden"></div>
-          <div id="client-info" class="alert alert-info hidden"></div>
+          <div id="client-info"  class="alert alert-info hidden"></div>
 
           <button type="button" id="verify-btn" class="btn btn-primary">
             Verify OTP & Register
@@ -157,26 +233,33 @@
   </div>
 
   <script>
+    /* ---------- small helpers ---------- */
+
     function showError(message) {
       const errorDiv = document.getElementById('client-error');
       errorDiv.textContent = message;
       errorDiv.classList.remove('hidden');
       document.getElementById('client-info').classList.add('hidden');
     }
+
     function showInfo(message) {
       const infoDiv = document.getElementById('client-info');
       infoDiv.textContent = message;
       infoDiv.classList.remove('hidden');
       document.getElementById('client-error').classList.add('hidden');
     }
+
     function hideMessages() {
       document.getElementById('client-error').classList.add('hidden');
       document.getElementById('client-info').classList.add('hidden');
     }
+
     function getSerialFromURL() {
       const params = new URLSearchParams(window.location.search);
       return params.get('sn') || '';
     }
+
+    /* ---------- load product ---------- */
 
     async function loadProduct(serialNo) {
       if (!serialNo) {
@@ -198,7 +281,8 @@
           document.getElementById('main-content').classList.remove('hidden');
         } else {
           document.getElementById('error-state').classList.remove('hidden');
-          document.getElementById('error-message').textContent = result.msg || 'Product not found';
+          document.getElementById('error-message').textContent =
+            result.msg || 'Product not found';
         }
       } catch (error) {
         document.getElementById('loading-state').classList.add('hidden');
@@ -216,7 +300,8 @@
       `;
     }
 
-    // BUTTON: Verify OTP & Register
+    /* ---------- button: open OTP widget ---------- */
+
     document.getElementById('verify-btn').addEventListener('click', () => {
       const sn       = window.currentSerialNo;
       const dealer   = document.getElementById('dealer-input').value.trim();
@@ -240,7 +325,7 @@
       btn.disabled = true;
       btn.textContent = 'Opening OTP...';
 
-      // Save form data globally until we get the token
+      // Save form data globally until OTP verified
       registrationFormData = { sn, dealer, customer, purchase, phone };
 
       // Tell MSG91 which number to send OTP to
@@ -255,7 +340,8 @@
       }
     });
 
-    // Called from MSG91 success callback with accessToken
+    /* ---------- called from MSG91 success callback ---------- */
+
     async function completeRegistration(accessToken) {
       const btn = document.getElementById('verify-btn');
       btn.textContent = 'Submitting...';
@@ -283,7 +369,7 @@
 
       } catch (error) {
         btn.disabled = false;
-        btn.textContent = 'Verify & Register';
+        btn.textContent = 'Verify OTP & Register';
         showError('Error: ' + error.message);
       }
     }
