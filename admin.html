@@ -1,0 +1,428 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Inpod Fans – Registration Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <style>
+    :root {
+      --bg-gradient-from: #0f172a;
+      --bg-gradient-to:   #1f2937;
+      --card-bg: #111827;
+      --card-soft: #020617;
+      --accent:  #f97316;
+      --accent-soft: #ffedd5;
+      --accent-dark: #ea580c;
+      --text-main: #e5e7eb;
+      --text-muted: #9ca3af;
+      --border-subtle: #1f2937;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+      background: radial-gradient(circle at top, var(--bg-gradient-to), var(--bg-gradient-from));
+      min-height: 100vh;
+      padding: 20px;
+      color: var(--text-main);
+    }
+
+    .container {
+      max-width: 960px;
+      margin: 0 auto;
+    }
+
+    .top-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+
+    .logo-wrapper img {
+      width: 180px;
+      max-width: 70%;
+      height: auto;
+    }
+
+    h1 {
+      color: white;
+      text-align: center;
+      margin-bottom: 20px;
+      font-size: 24px;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border-radius: 16px;
+      padding: 18px 20px;
+      margin-bottom: 16px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.35);
+      border: 1px solid var(--border-subtle);
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .card-title {
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .pill {
+      display: inline-flex;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: rgba(148,163,184,0.2);
+      font-size: 11px;
+      color: #cbd5f5;
+    }
+
+    .stats-grid {
+      display: grid;
+      gap: 12px;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    }
+
+    .stat-card {
+      background: var(--card-soft);
+      border-radius: 12px;
+      padding: 12px 14px;
+      border: 1px solid var(--border-subtle);
+    }
+
+    .stat-label {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+
+    .stat-value {
+      font-size: 22px;
+      font-weight: 600;
+      color: #ffffff;
+    }
+
+    .stat-caption {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      margin-top: 6px;
+    }
+
+    th, td {
+      padding: 8px 6px;
+      text-align: left;
+    }
+
+    th {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    tr:nth-child(even) td {
+      background: rgba(15,23,42,0.6);
+    }
+
+    tr:nth-child(odd) td {
+      background: rgba(15,23,42,0.3);
+    }
+
+    td {
+      border-bottom: 1px solid rgba(15,23,42,0.9);
+    }
+
+    .tag {
+      display: inline-flex;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: rgba(249,115,22,0.12);
+      color: #fed7aa;
+      font-size: 11px;
+    }
+
+    .small-muted {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .btn-link {
+      border: none;
+      padding: 7px 12px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 500;
+      cursor: pointer;
+      background: rgba(15,23,42,0.8);
+      color: #e5e7eb;
+    }
+
+    .btn-link:hover {
+      background: rgba(15,23,42,1);
+    }
+
+    .alert {
+      padding: 10px 12px;
+      border-radius: 12px;
+      font-size: 13px;
+      margin-bottom: 12px;
+    }
+
+    .alert-error {
+      background:#fee2e2;
+      color:#991b1b;
+    }
+
+    .alert-info {
+      background:#dbeafe;
+      color:#1e40af;
+    }
+
+    .loading {
+      text-align:center;
+      padding:30px 16px;
+      color:white;
+    }
+
+    .spinner {
+      border: 3px solid rgba(255,255,255,0.3);
+      border-top: 3px solid white;
+      border-radius: 50%;
+      width: 32px;
+      height: 32px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 10px;
+    }
+
+    @keyframes spin { 0% { transform: rotate(0deg);} 100%{ transform: rotate(360deg);} }
+
+    .hidden { display:none; }
+
+    .footer {
+      margin-top: 12px;
+      text-align: center;
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+  </style>
+
+</head>
+<body>
+  <div class="container">
+
+    <div class="top-bar">
+      <div class="logo-wrapper">
+        <img src="https://inpodfans.com/images/logo/logo.svg" alt="Inpod Fans Logo">
+      </div>
+      <button class="btn-link" onclick="window.location.href='index.html'">
+        ← Back to Registration
+      </button>
+    </div>
+
+    <h1>Registration Dashboard</h1>
+
+    <!-- Loading state -->
+    <div id="loading" class="loading">
+      <div class="spinner"></div>
+      <p>Loading registration statistics...</p>
+    </div>
+
+    <!-- Error -->
+    <div id="error" class="alert alert-error hidden"></div>
+
+    <!-- Main content -->
+    <div id="content" class="hidden">
+
+      <!-- Top Stats -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Overview</div>
+          <span class="pill" id="last-updated">Last updated just now</span>
+        </div>
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-label">Total Registered</div>
+            <div id="stat-total" class="stat-value">–</div>
+            <div class="stat-caption">All time registrations</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Today</div>
+            <div id="stat-today" class="stat-value">–</div>
+            <div class="stat-caption">Registrations for today</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Last 7 Days</div>
+            <div id="stat-7days" class="stat-value">–</div>
+            <div class="stat-caption">Rolling 7-day window</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Last 30 Days</div>
+            <div id="stat-30days" class="stat-value">–</div>
+            <div class="stat-caption">Rolling 30-day window</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- By Dealer -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Registrations by Dealer</div>
+          <span class="small-muted" id="dealer-summary"></span>
+        </div>
+        <div id="dealer-table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th style="width:60%;">Dealer</th>
+                <th style="width:40%;">Registered Units</th>
+              </tr>
+            </thead>
+            <tbody id="dealer-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- By Day -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Registrations Timeline</div>
+          <span class="small-muted">Aggregated by purchase date</span>
+        </div>
+        <div id="day-table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th style="width:60%;">Date</th>
+                <th style="width:40%;">Registered Units</th>
+              </tr>
+            </thead>
+            <tbody id="day-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="footer">
+        Data source: Google Sheets “Products” | Last sync from Apps Script
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // SAME web app URL as registration page
+    const API_BASE =
+      "https://script.google.com/macros/s/AKfycbyhC7ivoWvPm1hYo2VDr9mheEMBkmVFHrIHsxYpDNDH0KNkVNRvBN2DENMW4uWriymr/exec";
+
+    async function loadDashboard() {
+      const loading = document.getElementById('loading');
+      const content = document.getElementById('content');
+      const errorBox = document.getElementById('error');
+
+      try {
+        const res = await fetch(`${API_BASE}?admin=1`);
+        const data = await res.json();
+
+        loading.classList.add('hidden');
+
+        if (!data.success) {
+          errorBox.textContent = data.msg || 'Failed to load dashboard data.';
+          errorBox.classList.remove('hidden');
+          return;
+        }
+
+        // Show content
+        content.classList.remove('hidden');
+        errorBox.classList.add('hidden');
+
+        const totals = data.totals || {};
+        document.getElementById('stat-total').textContent  = totals.totalRegistered ?? 0;
+        document.getElementById('stat-today').textContent  = totals.todayRegistered ?? 0;
+        document.getElementById('stat-7days').textContent  = totals.last7Days ?? 0;
+        document.getElementById('stat-30days').textContent = totals.last30Days ?? 0;
+
+        document.getElementById('last-updated').textContent =
+          'Last updated: ' + new Date().toLocaleString();
+
+        // Dealer table
+        const byDealer = Array.isArray(data.byDealer) ? data.byDealer : [];
+        const dealerBody = document.getElementById('dealer-body');
+        dealerBody.innerHTML = '';
+
+        if (byDealer.length === 0) {
+          document.getElementById('dealer-summary').textContent = 'No dealers with registrations yet.';
+        } else {
+          document.getElementById('dealer-summary').textContent =
+            `${byDealer.length} dealers with at least one registration.`;
+        }
+
+        byDealer.forEach((row, index) => {
+          const tr = document.createElement('tr');
+
+          const tdDealer = document.createElement('td');
+          const tdCount  = document.createElement('td');
+
+          const label = row.dealer || 'Unknown';
+          const count = row.count || 0;
+
+          tdDealer.innerHTML =
+            `<span class="tag">${index + 1}</span> ` +
+            `<span style="margin-left:6px;">${label}</span>`;
+          tdCount.textContent = count.toString();
+
+          tr.appendChild(tdDealer);
+          tr.appendChild(tdCount);
+          dealerBody.appendChild(tr);
+        });
+
+        // Day table (timeline)
+        const byDay = Array.isArray(data.byDay) ? data.byDay : [];
+        const dayBody = document.getElementById('day-body');
+        dayBody.innerHTML = '';
+
+        byDay.forEach(row => {
+          const tr = document.createElement('tr');
+          const tdDate  = document.createElement('td');
+          const tdCount = document.createElement('td');
+
+          // date is in yyyy-MM-dd; render as dd-MM-yyyy
+          let formatted = row.date;
+          if (/^\d{4}-\d{2}-\d{2}$/.test(row.date)) {
+            const [y,m,d] = row.date.split('-');
+            formatted = `${d}-${m}-${y}`;
+          }
+
+          tdDate.textContent = formatted;
+          tdCount.textContent = (row.count || 0).toString();
+
+          tr.appendChild(tdDate);
+          tr.appendChild(tdCount);
+          dayBody.appendChild(tr);
+        });
+
+      } catch (err) {
+        console.error(err);
+        loading.classList.add('hidden');
+        errorBox.textContent = 'Error loading dashboard: ' + err.message;
+        errorBox.classList.remove('hidden');
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', loadDashboard);
+  </script>
+</body>
+</html>
