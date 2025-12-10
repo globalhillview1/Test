@@ -1,323 +1,321 @@
 <!doctype html>
 <html lang="en">
 <head>
-    <meta charset="utf-8">
-    <title>Inpod Fans Product Registration</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    
-    <style>
-        /* CSS Styles */
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding: 20px; }
-        .container { max-width: 640px; margin: 0 auto; }
-        h1 { color: white; text-align: center; margin-bottom: 30px; font-size: 28px; text-shadow: 0 2px 4px rgba(0,0,0,0.2); }
-        .card { background: white; border-radius: 16px; padding: 24px; margin-bottom: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.15); }
-        .product-info { background: #f8fafc; border-left: 4px solid #667eea; }
-        .product-info div { padding: 8px 0; color: #334155; }
-        .product-info b { color: #0f172a; min-width: 160px; display: inline-block; }
-        .form-group { margin-bottom: 20px; }
-        label { display: block; margin-bottom: 8px; font-weight: 600; color: #1e293b; font-size: 14px; }
-        input { width: 100%; padding: 12px 16px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 15px; transition: all 0.3s; font-family: inherit; }
-        input:focus { outline: none; border-color: #667eea; box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1); }
-        input:disabled { background: #f1f5f9; cursor: not-allowed; }
-        .phone-group { position: relative; }
-        #phone-input { padding-right: 120px; }
-        .btn { padding: 12px 24px; border: none; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.3s; font-family: inherit; width: 100%; }
-        .btn-primary { background: #667eea; color: white; }
-        .btn-primary:hover:not(:disabled) { background: #5568d3; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4); }
-        .btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
-        #send-otp-btn { position: absolute; right: 8px; top: 34px; width: auto; padding: 8px 16px; font-size: 13px; background: #10b981; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; transition: all 0.3s; }
-        #send-otp-btn:hover:not(:disabled) { background: #059669; }
-        #send-otp-btn:disabled { background: #cbd5e1; color: #64748b; cursor: not-allowed; }
-        .alert { padding: 14px 18px; border-radius: 8px; margin-bottom: 20px; font-size: 14px; line-height: 1.5; }
-        .alert-error { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
-        .alert-info { background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; }
-        .hidden { display: none; }
-        .loading { text-align: center; padding: 40px 20px; color: white; }
-        .spinner { border: 3px solid rgba(255,255,255,0.3); border-top: 3px solid white; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto 16px; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .success-page { text-align: center; padding: 40px 20px; }
-        .success-page h2 { color: #10b981; font-size: 32px; margin-bottom: 16px; }
-        .success-icon { font-size: 64px; margin-bottom: 20px; }
-        .success-details { background: #f8fafc; padding: 20px; border-radius: 12px; margin: 20px 0; text-align: left; }
-        .success-details div { padding: 8px 0; color: #334155; }
-        @media (max-width: 640px) { h1 { font-size: 24px; } .card { padding: 20px; } #send-otp-btn { position: static; width: 100%; margin-top: 8px; } #phone-input { padding-right: 16px; } }
-    </style>
+  <meta charset="utf-8">
+  <title>Inpod Fans Product Registration</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    /* your existing styles, unchanged */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding: 20px; }
+    .container { max-width: 640px; margin: 0 auto; }
+    h1 { color: white; text-align: center; margin-bottom: 30px; font-size: 28px; text-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+    .card { background: white; border-radius: 16px; padding: 24px; margin-bottom: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.15); }
+    .product-info { background: #f8fafc; border-left: 4px solid #667eea; }
+    .product-info div { padding: 8px 0; color: #334155; }
+    .product-info b { color: #0f172a; min-width: 160px; display: inline-block; }
+    .form-group { margin-bottom: 20px; }
+    label { display: block; margin-bottom: 8px; font-weight: 600; color: #1e293b; font-size: 14px; }
+    input { width: 100%; padding: 12px 16px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 15px; transition: all 0.3s; font-family: inherit; }
+    input:focus { outline: none; border-color: #667eea; box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1); }
+    input:disabled { background: #f1f5f9; cursor: not-allowed; }
+    .phone-group { position: relative; }
+    #phone-input { padding-right: 120px; }
+    .btn { padding: 12px 24px; border: none; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.3s; font-family: inherit; width: 100%; }
+    .btn-primary { background: #667eea; color: white; }
+    .btn-primary:hover:not(:disabled) { background: #5568d3; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4); }
+    .btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+    #send-otp-btn { position: absolute; right: 8px; top: 34px; width: auto; padding: 8px 16px; font-size: 13px; background: #10b981; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; transition: all 0.3s; }
+    #send-otp-btn:hover:not(:disabled) { background: #059669; }
+    #send-otp-btn:disabled { background: #cbd5e1; color: #64748b; cursor: not-allowed; }
+    .alert { padding: 14px 18px; border-radius: 8px; margin-bottom: 20px; font-size: 14px; line-height: 1.5; }
+    .alert-error { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
+    .alert-info { background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; }
+    .hidden { display: none; }
+    .loading { text-align: center; padding: 40px 20px; color: white; }
+    .spinner { border: 3px solid rgba(255,255,255,0.3); border-top: 3px solid white; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto 16px; }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    .success-page { text-align: center; padding: 40px 20px; }
+    .success-page h2 { color: #10b981; font-size: 32px; margin-bottom: 16px; }
+    .success-icon { font-size: 64px; margin-bottom: 20px; }
+    .success-details { background: #f8fafc; padding: 20px; border-radius: 12px; margin: 20px 0; text-align: left; }
+    .success-details div { padding: 8px 0; color: #334155; }
+    @media (max-width: 640px) {
+      h1 { font-size: 24px; }
+      .card { padding: 20px; }
+      #send-otp-btn { position: static; width: 100%; margin-top: 8px; }
+      #phone-input { padding-right: 16px; }
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <h1>🌀 Inpod Fans Product Registration</h1>
-        
-        <div id="loading-state" class="loading hidden">
-            <div class="spinner"></div>
-            <p>Loading product information...</p>
-        </div>
-        
-        <div id="error-state" class="hidden">
-            <div class="card">
-                <div class="alert alert-error" id="error-message"></div>
-            </div>
-        </div>
-        
-        <div id="main-content" class="hidden">
-            <div id="product-info" class="card product-info"></div>
-            
-            <div class="card">
-                <form id="registration-form">
-                    <div class="form-group">
-                        <label for="dealer-input">Dealer Name *</label>
-                        <input type="text" id="dealer-input" name="dealer" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="customer-input">Customer Name *</label>
-                        <input type="text" id="customer-input" name="customer" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="purchase-input">Purchase Date *</label>
-                        <input type="date" id="purchase-input" name="purchase" required>
-                    </div>
-                    
-                    <div class="form-group phone-group" id="phone-group">
-                        <label for="phone-input">Phone Number (with country code) *</label>
-                        <input type="tel" id="phone-input" name="phone" placeholder="919876543210" required>
-                        <button type="button" id="send-otp-btn">Send OTP</button>
-                    </div>
-                    
-                    <div class="form-group hidden" id="otp-group">
-                        <label for="otp-input">Verification Code (OTP) *</label>
-                        <input type="text" id="otp-input" name="otp" placeholder="Enter OTP code" maxlength="6" pattern="[0-9]{4,6}">
-                    </div>
-                    
-                    <div id="client-error" class="alert alert-error hidden"></div>
-                    <div id="client-info" class="alert alert-info hidden"></div>
-                    
-                    <button type="button" id="verify-btn" class="btn btn-primary hidden">Verify & Register</button>
-                </form>
-            </div>
-        </div>
+  <div class="container">
+    <h1>🌀 Inpod Fans Product Registration</h1>
+    
+    <div id="loading-state" class="loading hidden">
+      <div class="spinner"></div>
+      <p>Loading product information...</p>
     </div>
+    
+    <div id="error-state" class="hidden">
+      <div class="card">
+        <div class="alert alert-error" id="error-message"></div>
+      </div>
+    </div>
+    
+    <div id="main-content" class="hidden">
+      <div id="product-info" class="card product-info"></div>
+      
+      <div class="card">
+        <form id="registration-form">
+          <div class="form-group">
+            <label for="dealer-input">Dealer Name *</label>
+            <input type="text" id="dealer-input" name="dealer" required>
+          </div>
+          
+          <div class="form-group">
+            <label for="customer-input">Customer Name *</label>
+            <input type="text" id="customer-input" name="customer" required>
+          </div>
+          
+          <div class="form-group">
+            <label for="purchase-input">Purchase Date *</label>
+            <input type="date" id="purchase-input" name="purchase" required>
+          </div>
+          
+          <div class="form-group phone-group" id="phone-group">
+            <label for="phone-input">Phone Number (with country code) *</label>
+            <input type="tel" id="phone-input" name="phone" placeholder="919876543210" required>
+            <button type="button" id="send-otp-btn">Send OTP</button>
+          </div>
+          
+          <div class="form-group hidden" id="otp-group">
+            <label for="otp-input">Verification Code (OTP) *</label>
+            <input type="text" id="otp-input" name="otp" placeholder="Enter OTP code" maxlength="6" pattern="[0-9]{4,6}">
+          </div>
+          
+          <div id="client-error" class="alert alert-error hidden"></div>
+          <div id="client-info" class="alert alert-info hidden"></div>
+          
+          <button type="button" id="verify-btn" class="btn btn-primary hidden">Verify & Register</button>
+        </form>
+      </div>
+    </div>
+  </div>
 
- <script>
-        // API Configuration (Your Google Apps Script Web App URL)
-        // Ensure this is the correct deployment URL ending in /exec
-        const API_BASE = 'https://script.google.com/macros/s/AKfycbyhC7ivoWvPm1hYo2VDr9mheEMBkmVFHrIHsxYpDNDH0KNkVNRvBN2DENMW4uWriymr/exec'; 
+  <script>
+    // Your deployed Apps Script Web App URL (ends with /exec)
+    const API_BASE = 'https://script.google.com/macros/s/AKfycbyhC7ivoWvPm1hYo2VDr9mheEMBkmVFHrIHsxYpDNDH0KNkVNRvBN2DENMW4uWriymr/exec';
 
-        // Global variables
-        let currentProduct = null;
-        let currentSerialNo = null;
+    let currentProduct  = null;
+    let currentSerialNo = null;
 
-        // --- UTILITIES ---
-        function showError(message) {
-            const errorDiv = document.getElementById('client-error');
-            errorDiv.textContent = message;
-            errorDiv.classList.remove('hidden');
-            document.getElementById('client-info').classList.add('hidden');
+    function showError(message) {
+      const errorDiv = document.getElementById('client-error');
+      errorDiv.textContent = message;
+      errorDiv.classList.remove('hidden');
+      document.getElementById('client-info').classList.add('hidden');
+    }
+
+    function showInfo(message) {
+      const infoDiv = document.getElementById('client-info');
+      infoDiv.textContent = message;
+      infoDiv.classList.remove('hidden');
+      document.getElementById('client-error').classList.add('hidden');
+    }
+
+    function hideMessages() {
+      document.getElementById('client-error').classList.add('hidden');
+      document.getElementById('client-info').classList.add('hidden');
+    }
+
+    function getSerialFromURL() {
+      const params = new URLSearchParams(window.location.search);
+      return params.get('sn') || '';
+    }
+
+    async function loadProduct(serialNo) {
+      if (!serialNo) {
+        document.getElementById('loading-state').classList.add('hidden');
+        document.getElementById('error-state').classList.remove('hidden');
+        document.getElementById('error-message').textContent = 'No serial number provided.';
+        return;
+      }
+
+      try {
+        const response = await fetch(`${API_BASE}?sn=${encodeURIComponent(serialNo)}`);
+        const result   = await response.json();
+
+        document.getElementById('loading-state').classList.add('hidden');
+
+        if (result.success && result.product) {
+          currentProduct  = result.product;
+          currentSerialNo = serialNo;
+          displayProduct(result.product);
+          document.getElementById('main-content').classList.remove('hidden');
+        } else {
+          document.getElementById('error-state').classList.remove('hidden');
+          document.getElementById('error-message').textContent = result.msg || 'Product not found';
         }
+      } catch (error) {
+        document.getElementById('loading-state').classList.add('hidden');
+        document.getElementById('error-state').classList.remove('hidden');
+        document.getElementById('error-message').textContent = 'Error loading product.';
+      }
+    }
 
-        function showInfo(message) {
-            const infoDiv = document.getElementById('client-info');
-            infoDiv.textContent = message;
-            infoDiv.classList.remove('hidden');
-            document.getElementById('client-error').classList.add('hidden');
-        }
+    function displayProduct(product) {
+      const infoDiv = document.getElementById('product-info');
+      infoDiv.innerHTML = `
+        <div><b>Serial No.:</b> ${product.serialNo || '-'}</div>
+        <div><b>Model Name:</b> ${product.modelName || '-'}</div>
+        <div><b>Manufacturing Date:</b> ${product.manufacturingDate || '-'}</div>
+      `;
+    }
 
-        function hideMessages() {
-            document.getElementById('client-error').classList.add('hidden');
-            document.getElementById('client-info').classList.add('hidden');
-        }
+    // --- SEND OTP ---
 
-        function getSerialFromURL() {
-            const params = new URLSearchParams(window.location.search);
-            return params.get('sn') || '';
-        }
+    document.getElementById('send-otp-btn').addEventListener('click', async () => {
+      let phoneNumber = document.getElementById('phone-input').value.trim();
+      const sendBtn   = document.getElementById('send-otp-btn');
 
-        // --- MAIN LOGIC ---
+      phoneNumber = phoneNumber.replace('+', '').replace(/\s+/g, '');
 
-        async function loadProduct(serialNo) {
-            if (!serialNo) {
-                document.getElementById('loading-state').classList.add('hidden');
-                document.getElementById('error-state').classList.remove('hidden');
-                document.getElementById('error-message').textContent = 'No serial number provided.';
-                return;
-            }
+      if (!phoneNumber || phoneNumber.length < 10) {
+        showError('Please enter a valid phone number (e.g., 919876543210)');
+        return;
+      }
 
-            try {
-                // Using API_BASE for lookup
-                const response = await fetch(`${API_BASE}?sn=${encodeURIComponent(serialNo)}`);
-                const result = await response.json();
+      hideMessages();
+      sendBtn.textContent = 'Sending...';
+      sendBtn.disabled    = true;
 
-                document.getElementById('loading-state').classList.add('hidden');
-
-                if (result.success && result.product) {
-                    currentProduct = result.product;
-                    currentSerialNo = serialNo;
-                    displayProduct(result.product);
-                    document.getElementById('main-content').classList.remove('hidden');
-                } else {
-                    document.getElementById('error-state').classList.remove('hidden');
-                    document.getElementById('error-message').textContent = result.msg || 'Product not found';
-                }
-            } catch (error) {
-                document.getElementById('loading-state').classList.add('hidden');
-                document.getElementById('error-state').classList.remove('hidden');
-                document.getElementById('error-message').textContent = 'Error loading product.';
-            }
-        }
-
-        function displayProduct(product) {
-            const infoDiv = document.getElementById('product-info');
-            infoDiv.innerHTML = `
-                <div><b>Serial No.:</b> ${product.serialNo || '-'}</div>
-                <div><b>Model Name:</b> ${product.modelName || '-'}</div>
-                <div><b>Manufacturing Date:</b> ${product.manufacturingDate || '-'}</div>
-            `;
-        }
-
-        // --- BUTTON HANDLERS ---
-
-        // 1. Send OTP (Proxied through Backend)
-        document.getElementById('send-otp-btn').addEventListener('click', async () => {
-            let phoneNumber = document.getElementById('phone-input').value.trim();
-            const sendBtn = document.getElementById('send-otp-btn');
-
-            phoneNumber = phoneNumber.replace('+', '').replace(' ', '');
-
-            if (!phoneNumber || phoneNumber.length < 10) {
-                showError("Please enter a valid phone number (e.g., 919876543210)");
-                return;
-            }
-
-            hideMessages();
-            sendBtn.textContent = 'Sending...';
-            sendBtn.disabled = true;
-
-            try {
-                // Call Google Apps Script (Backend) to send OTP
-                const response = await fetch(API_BASE, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                    body: JSON.stringify({
-                        action: 'sendOtp',
-                        data: { phone: phoneNumber }
-                    })
-                });
-                
-                const result = await response.json();
-
-                if (result.success) {
-                    document.getElementById('phone-input').disabled = true;
-                    document.getElementById('phone-group').classList.add('hidden');
-                    document.getElementById('otp-group').classList.remove('hidden');
-                    document.getElementById('verify-btn').classList.remove('hidden');
-                    document.getElementById('otp-input').focus();
-                    
-                    showInfo(`Verification code sent to ${phoneNumber}`);
-                } else {
-                    throw new Error(result.msg || "Failed to send OTP");
-                }
-                
-            } catch (error) {
-                sendBtn.textContent = 'Send OTP';
-                sendBtn.disabled = false;
-                showError('Error: ' + error.message);
-            }
+      try {
+        const response = await fetch(API_BASE, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({
+            action: 'sendOtp',
+            data:   { phone: phoneNumber }
+          })
         });
 
-        // 2. Verify OTP & Register
-        document.getElementById('verify-btn').addEventListener('click', async () => {
-            let phoneNumber = document.getElementById('phone-input').value.trim();
-            phoneNumber = phoneNumber.replace('+', '').replace(' ', '');
-            
-            const otp = document.getElementById('otp-input').value.trim();
-            const verifyBtn = document.getElementById('verify-btn');
+        const result = await response.json();
+        console.log('sendOtp result from server:', result);
 
-            if (!otp || otp.length < 4) {
-                showError("Please enter the verification code");
-                return;
-            }
-
-            hideMessages();
-            verifyBtn.textContent = 'Verifying...';
-            verifyBtn.disabled = true;
-
-            try {
-                // Step A: Verify OTP via Backend
-                const verifyResponse = await fetch(API_BASE, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                    body: JSON.stringify({
-                        action: 'verifyOtp',
-                        data: { phone: phoneNumber, otp: otp }
-                    })
-                });
-
-                const verifyResult = await verifyResponse.json();
-
-                if (!verifyResult.success) {
-                    throw new Error(verifyResult.msg || "Invalid OTP");
-                }
-
-                // Step B: If Verified, Save Registration
-                verifyBtn.textContent = 'Submitting...';
-
-                const formData = {
-                    sn: currentSerialNo,
-                    dealer: document.getElementById('dealer-input').value.trim(),
-                    customer: document.getElementById('customer-input').value.trim(),
-                    purchase: document.getElementById('purchase-input').value,
-                    phone: phoneNumber
-                };
-
-                const saveResponse = await fetch(API_BASE, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                    body: JSON.stringify({
-                        action: 'saveRegistration',
-                        data: formData
-                    })
-                });
-
-                const saveResult = await saveResponse.json();
-
-                if (saveResult.success) {
-                    showSuccessPage(saveResult);
-                } else {
-                    throw new Error(saveResult.msg || "Registration failed");
-                }
-
-            } catch (error) {
-                verifyBtn.textContent = 'Verify & Register';
-                verifyBtn.disabled = false;
-                showError('Error: ' + error.message);
-            }
-        });
-
-        function showSuccessPage(result) {
-            document.body.innerHTML = `
-                <div class="container">
-                    <div class="card success-page">
-                        <div class="success-icon">✅</div>
-                        <h2>Registration Successful!</h2>
-                        <p style="color: #64748b; margin-bottom: 20px;">
-                            Your product has been successfully registered.
-                        </p>
-                        <div class="success-details">
-                            <div><b>Serial No.:</b> ${result.sn}</div>
-                            <div><b>Model:</b> ${result.model || '-'}</div>
-                            <div><b>Purchase Date:</b> ${result.purchaseDDMMYYYY}</div>
-                        </div>
-                    </div>
-                </div>
-            `;
+        if (result.success) {
+          document.getElementById('phone-input').disabled = true;
+          document.getElementById('phone-group').classList.add('hidden');
+          document.getElementById('otp-group').classList.remove('hidden');
+          document.getElementById('verify-btn').classList.remove('hidden');
+          document.getElementById('otp-input').focus();
+          showInfo(`Verification code sent to ${phoneNumber}`);
+        } else {
+          throw new Error(result.msg || 'Failed to send OTP');
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
-            const serialNo = getSerialFromURL();
-            document.getElementById('loading-state').classList.remove('hidden');
-            loadProduct(serialNo);
+      } catch (error) {
+        sendBtn.textContent = 'Send OTP';
+        sendBtn.disabled    = false;
+        showError('Error sending OTP: ' + error.message);
+      }
+    });
+
+    // --- VERIFY OTP & REGISTER ---
+
+    document.getElementById('verify-btn').addEventListener('click', async () => {
+      let phoneNumber = document.getElementById('phone-input').value.trim();
+      phoneNumber     = phoneNumber.replace('+', '').replace(/\s+/g, '');
+      const otp       = document.getElementById('otp-input').value.trim();
+      const verifyBtn = document.getElementById('verify-btn');
+
+      if (!otp || otp.length < 4) {
+        showError('Please enter the verification code');
+        return;
+      }
+
+      hideMessages();
+      verifyBtn.textContent = 'Verifying...';
+      verifyBtn.disabled    = true;
+
+      try {
+        // A) Verify OTP
+        const verifyResponse = await fetch(API_BASE, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({
+            action: 'verifyOtp',
+            data:   { phone: phoneNumber, otp: otp }
+          })
         });
-    </script>
+
+        const verifyResult = await verifyResponse.json();
+        console.log('verifyOtp result from server:', verifyResult);
+
+        if (!verifyResult.success) {
+          throw new Error(verifyResult.msg || 'Invalid OTP');
+        }
+
+        // B) Save registration
+        verifyBtn.textContent = 'Submitting...';
+
+        const formData = {
+          sn:       currentSerialNo,
+          dealer:   document.getElementById('dealer-input').value.trim(),
+          customer: document.getElementById('customer-input').value.trim(),
+          purchase: document.getElementById('purchase-input').value,
+          phone:    phoneNumber
+        };
+
+        const saveResponse = await fetch(API_BASE, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({
+            action: 'saveRegistration',
+            data:   formData
+          })
+        });
+
+        const saveResult = await saveResponse.json();
+        console.log('saveRegistration result:', saveResult);
+
+        if (saveResult.success) {
+          showSuccessPage(saveResult);
+        } else {
+          throw new Error(saveResult.msg || 'Registration failed');
+        }
+
+      } catch (error) {
+        verifyBtn.textContent = 'Verify & Register';
+        verifyBtn.disabled    = false;
+        showError('Error: ' + error.message);
+      }
+    });
+
+    function showSuccessPage(result) {
+      document.body.innerHTML = `
+        <div class="container">
+          <div class="card success-page">
+            <div class="success-icon">✅</div>
+            <h2>Registration Successful!</h2>
+            <p style="color: #64748b; margin-bottom: 20px;">
+              Your product has been successfully registered.
+            </p>
+            <div class="success-details">
+              <div><b>Serial No.:</b> ${result.sn}</div>
+              <div><b>Model:</b> ${result.model || '-'}</div>
+              <div><b>Purchase Date:</b> ${result.purchaseDDMMYYYY}</div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const serialNo = getSerialFromURL();
+      document.getElementById('loading-state').classList.remove('hidden');
+      loadProduct(serialNo);
+    });
+  </script>
 </body>
 </html>
