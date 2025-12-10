@@ -13,7 +13,7 @@
       --bg-gradient-from: #0f172a;
       --bg-gradient-to:   #1f2937;
       --card-bg: #ffffff;
-      --accent:  #f97316;   /* orange */
+      --accent:  #f97316;
       --accent-soft: #ffedd5;
       --accent-dark: #ea580c;
       --text-main: #0f172a;
@@ -158,11 +158,6 @@
       flex-direction: column;
       gap: 8px;
     }
-    .btn-secondary {
-      background:#e5e7eb;
-      color:#111827;
-    }
-    .btn-secondary:hover { background:#d1d5db; color:#111827; }
   </style>
 
   <!-- MSG91 Widget (Default UI) -->
@@ -173,7 +168,6 @@
     let registrationFormData = null;
     let currentLang = 'en';
 
-    // Simple i18n map
     const T = {
       en: {
         title: "Product Registration",
@@ -228,14 +222,14 @@
     function updateLangUI() {
       document.getElementById("title-text").textContent = t('title');
       document.querySelector("label[for='dealer-select']").textContent    = t('dealer') + " *";
+      document.querySelector("label[for='dealer-other-input']").textContent = t('dealerOther') + " *";
       document.querySelector("label[for='customer-input']").textContent   = t('customer') + " *";
       document.querySelector("label[for='purchase-input']").textContent   = t('purchase') + " *";
       document.querySelector("label[for='phone-input']").textContent      = t('phone') + " *";
-      document.getElementById("verify-btn").textContent                    = t('verifyBtn');
-
-      // Lang buttons text
-      document.getElementById("lang-en").textContent = T.en.langEn;
-      document.getElementById("lang-hi").textContent = T.en.langHi;
+      document.getElementById("verify-btn").textContent                   = t('verifyBtn');
+      document.getElementById("loading-text").textContent                 = t('loadingProduct');
+      document.getElementById("lang-en").textContent                      = T.en.langEn;
+      document.getElementById("lang-hi").textContent                      = T.en.langHi;
     }
 
     // MSG91 configuration
@@ -327,15 +321,11 @@
       <div class="card">
         <form onsubmit="return false;">
 
-          <!-- Dealer dropdown -->
-          <div class="form-group">
+          <!-- Dealer dropdown from backend -->
+          <div class="form-group" id="dealer-select-group">
             <label for="dealer-select">Dealer Name *</label>
             <select id="dealer-select">
-              <option value="">{dealerPlaceholder}</option>
-              <option value="Inpod Authorised Dealer 1">Inpod Authorised Dealer 1</option>
-              <option value="Inpod Authorised Dealer 2">Inpod Authorised Dealer 2</option>
-              <option value="Inpod Authorised Dealer 3">Inpod Authorised Dealer 3</option>
-              <option value="OTHER">Other</option>
+              <option value="">Loading dealers...</option>
             </select>
           </div>
 
@@ -411,27 +401,65 @@
         updateLangUI();
       });
       updateLangUI();
-      document.getElementById("loading-text").textContent = t('loadingProduct');
     });
 
-    // Dealer dropdown "Other"
-    document.addEventListener("DOMContentLoaded", () => {
-      const dealerSelect = document.getElementById("dealer-select");
-      const dealerOtherGroup = document.getElementById("dealer-other-group");
-      const dealerPlaceholder = t('dealerPlaceholder');
-      dealerSelect.options[0].textContent = dealerPlaceholder;
+    // Load dealers from backend
+    async function loadDealers() {
+      const select = document.getElementById("dealer-select");
+      const dealerSelectGroup = document.getElementById("dealer-select-group");
+      const dealerOtherGroup  = document.getElementById("dealer-other-group");
 
-      dealerSelect.addEventListener("change", () => {
-        if (dealerSelect.value === "OTHER") {
+      try {
+        const res = await fetch(`${API_BASE}?dealers=1`);
+        const result = await res.json();
+
+        if (!result.success || !Array.isArray(result.dealers) || result.dealers.length === 0) {
+          // fallback: hide dropdown, use free-text only
+          dealerSelectGroup.classList.add("hidden");
           dealerOtherGroup.classList.remove("hidden");
-        } else {
-          dealerOtherGroup.classList.add("hidden");
+          return;
         }
-      });
-    });
+
+        // Clear and populate
+        select.innerHTML = "";
+        const placeholder = document.createElement("option");
+        placeholder.value = "";
+        placeholder.textContent = t('dealerPlaceholder');
+        select.appendChild(placeholder);
+
+        result.dealers.forEach(name => {
+          const opt = document.createElement("option");
+          opt.value = name;
+          opt.textContent = name;
+          select.appendChild(opt);
+        });
+
+        // Add OTHER option
+        const optOther = document.createElement("option");
+        optOther.value = "OTHER";
+        optOther.textContent = "Other";
+        select.appendChild(optOther);
+
+        select.addEventListener("change", () => {
+          if (select.value === "OTHER") {
+            dealerOtherGroup.classList.remove("hidden");
+          } else {
+            dealerOtherGroup.classList.add("hidden");
+          }
+        });
+
+      } catch (e) {
+        console.error("Error loading dealers:", e);
+        // Fallback to free text dealer
+        dealerSelectGroup.classList.add("hidden");
+        dealerOtherGroup.classList.remove("hidden");
+      }
+    }
 
     // Load product
     document.addEventListener("DOMContentLoaded", async ()=>{
+      await loadDealers();
+
       const sn = getSerial();
       const loader = document.getElementById("loading-state");
       loader.classList.remove("hidden");
@@ -473,10 +501,20 @@
     document.getElementById("verify-btn").addEventListener("click", () => {
       const sn = window.currentSerialNo;
 
-      const dealerSelect = document.getElementById("dealer-select");
-      let dealer = dealerSelect.value;
-      const dealerOther = document.getElementById("dealer-other-input").value.trim();
-      if (dealer === "OTHER") dealer = dealerOther;
+      const dealerSelectGroup = document.getElementById("dealer-select-group");
+      const dealerSelect      = document.getElementById("dealer-select");
+      const dealerOtherGroup  = document.getElementById("dealer-other-group");
+      const dealerOtherInput  = document.getElementById("dealer-other-input");
+
+      let dealer = "";
+      if (!dealerSelectGroup.classList.contains("hidden") && dealerSelect) {
+        dealer = dealerSelect.value;
+        if (dealer === "OTHER") {
+          dealer = dealerOtherInput.value.trim();
+        }
+      } else {
+        dealer = dealerOtherInput.value.trim();
+      }
 
       const customer = document.getElementById("customer-input").value.trim();
       const purchase = document.getElementById("purchase-input").value.trim();
@@ -540,8 +578,7 @@
         showSuccessPage(result);
         triggerWarrantyPdf(result);
 
-      }
-      catch(err){
+      } catch(err){
         btn.disabled=false;
         btn.textContent=t('verifyBtn');
         showError("Error: " + err.message);
@@ -574,13 +611,12 @@
         </div>
       `;
 
-      // Reattach PDF click after DOM rewrite
       document.getElementById('pdf-btn').addEventListener('click', () => {
         triggerWarrantyPdf(r);
       });
     }
 
-    // Warranty PDF generation using jsPDF
+    // Warranty PDF via jsPDF
     function triggerWarrantyPdf(r) {
       const { jsPDF } = window.jspdf || {};
       if (!jsPDF) {
