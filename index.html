@@ -111,30 +111,28 @@
 
   <!-- MSG91 WIDGET CONFIG (DEFAULT UI) -->
   <script type="text/javascript">
-    // Your deployed Apps Script web app URL:
     const API_BASE = 'https://script.google.com/macros/s/AKfycbyhC7ivoWvPm1hYo2VDr9mheEMBkmVFHrIHsxYpDNDH0KNkVNRvBN2DENMW4uWriymr/exec';
 
-    // Will hold form data while OTP flow happens
     let registrationFormData = null;
 
-    // Configuration from MSG91 "Web SDK for default UI"
     var configuration = {
       widgetId:  "356c6a614a59393139323835",
       tokenAuth: "479874Tz6YZockSUbu69273d6bP1",
-      identifier: "",           // we’ll set this to the phone number before calling initSendOTP
-      exposeMethods: false,     // default UI – no manual methods required
+      identifier: "",
+      exposeMethods: false,  // default UI
 
-      // called when OTP has been entered and verified by MSG91
       success: function (data) {
         console.log('MSG91 success response:', data);
 
-        // In your account the JWT comes in "message"
         var accessToken =
           data.accessToken ||
           data['access-token'] ||
           data.token ||
-          (data.response && (data.response.accessToken || data.response['access-token'] || data.response.token)) ||
-          data.message;   // <-- important
+          (data.response &&
+            (data.response.accessToken ||
+             data.response['access-token'] ||
+             data.response.token)) ||
+          data.message;  // in your case the JWT is here
 
         if (!accessToken) {
           alert('Could not read OTP token from MSG91 response.');
@@ -144,7 +142,6 @@
           return;
         }
 
-        // OTP verified by MSG91 → finish registration via backend
         completeRegistration(accessToken);
       },
 
@@ -157,7 +154,7 @@
       }
     };
 
-    // Load OTP script (we do NOT auto-call initSendOTP here)
+    // Load OTP script
     (function loadOtpScript(urls) {
       var i = 0;
       function attempt() {
@@ -217,8 +214,15 @@
           </div>
 
           <div class="form-group">
-            <label for="phone-input">Phone Number (with country code) *</label>
-            <input type="tel" id="phone-input" name="phone" placeholder="919876543210" required>
+            <label for="phone-input">Phone Number *</label>
+            <!-- user can type 10-digit or with +91 -->
+            <input
+              type="tel"
+              id="phone-input"
+              name="phone"
+              placeholder="e.g. 9988776655 or +919988776655"
+              required
+            >
           </div>
 
           <div id="client-error" class="alert alert-error hidden"></div>
@@ -233,33 +237,26 @@
   </div>
 
   <script>
-    /* ---------- small helpers ---------- */
-
     function showError(message) {
       const errorDiv = document.getElementById('client-error');
       errorDiv.textContent = message;
       errorDiv.classList.remove('hidden');
       document.getElementById('client-info').classList.add('hidden');
     }
-
     function showInfo(message) {
       const infoDiv = document.getElementById('client-info');
       infoDiv.textContent = message;
       infoDiv.classList.remove('hidden');
       document.getElementById('client-error').classList.add('hidden');
     }
-
     function hideMessages() {
       document.getElementById('client-error').classList.add('hidden');
       document.getElementById('client-info').classList.add('hidden');
     }
-
     function getSerialFromURL() {
       const params = new URLSearchParams(window.location.search);
       return params.get('sn') || '';
     }
-
-    /* ---------- load product ---------- */
 
     async function loadProduct(serialNo) {
       if (!serialNo) {
@@ -300,8 +297,7 @@
       `;
     }
 
-    /* ---------- button: open OTP widget ---------- */
-
+    // BUTTON: Verify OTP & Register
     document.getElementById('verify-btn').addEventListener('click', () => {
       const sn       = window.currentSerialNo;
       const dealer   = document.getElementById('dealer-input').value.trim();
@@ -314,9 +310,18 @@
         return;
       }
 
+      // Normalise phone:
+      //  - remove + and spaces
+      //  - if 10 digits → assume Indian number and prefix 91
       phone = phone.replace('+', '').replace(/\s+/g, '');
-      if (phone.length < 10) {
-        showError('Please enter a valid phone number (e.g., 919876543210)');
+
+      if (/^[0-9]{10}$/.test(phone)) {
+        phone = '91' + phone;   // auto-prefix for India
+      }
+
+      // final validation: must now be 12 digits (e.g. 91XXXXXXXXXX)
+      if (!/^[0-9]{12}$/.test(phone)) {
+        showError('Enter a valid Indian mobile number (10 digits) or with +91.');
         return;
       }
 
@@ -325,10 +330,8 @@
       btn.disabled = true;
       btn.textContent = 'Opening OTP...';
 
-      // Save form data globally until OTP verified
       registrationFormData = { sn, dealer, customer, purchase, phone };
 
-      // Tell MSG91 which number to send OTP to
       configuration.identifier = phone;
 
       if (typeof window.initSendOTP === 'function') {
@@ -340,8 +343,7 @@
       }
     });
 
-    /* ---------- called from MSG91 success callback ---------- */
-
+    // Called from MSG91 success callback
     async function completeRegistration(accessToken) {
       const btn = document.getElementById('verify-btn');
       btn.textContent = 'Submitting...';
