@@ -162,6 +162,7 @@
 
   <!-- MSG91 Widget (Default UI) -->
   <script>
+    // Apps Script web app URL
     const API_BASE =
       "https://script.google.com/macros/s/AKfycbyhC7ivoWvPm1hYo2VDr9mheEMBkmVFHrIHsxYpDNDH0KNkVNRvBN2DENMW4uWriymr/exec";
 
@@ -221,15 +222,15 @@
 
     function updateLangUI() {
       document.getElementById("title-text").textContent = t('title');
-      document.querySelector("label[for='dealer-select']").textContent    = t('dealer') + " *";
-      document.querySelector("label[for='dealer-other-input']").textContent = t('dealerOther') + " *";
-      document.querySelector("label[for='customer-input']").textContent   = t('customer') + " *";
-      document.querySelector("label[for='purchase-input']").textContent   = t('purchase') + " *";
-      document.querySelector("label[for='phone-input']").textContent      = t('phone') + " *";
-      document.getElementById("verify-btn").textContent                   = t('verifyBtn');
-      document.getElementById("loading-text").textContent                 = t('loadingProduct');
-      document.getElementById("lang-en").textContent                      = T.en.langEn;
-      document.getElementById("lang-hi").textContent                      = T.en.langHi;
+      document.querySelector("label[for='dealer-select']").textContent        = t('dealer') + " *";
+      document.querySelector("label[for='dealer-other-input']").textContent   = t('dealerOther') + " *";
+      document.querySelector("label[for='customer-input']").textContent       = t('customer') + " *";
+      document.querySelector("label[for='purchase-input']").textContent       = t('purchase') + " *";
+      document.querySelector("label[for='phone-input']").textContent          = t('phone') + " *";
+      document.getElementById("verify-btn").textContent                       = t('verifyBtn');
+      document.getElementById("loading-text").textContent                     = t('loadingProduct');
+      document.getElementById("lang-en").textContent                          = T.en.langEn;
+      document.getElementById("lang-hi").textContent                          = T.en.langHi;
     }
 
     // MSG91 configuration
@@ -237,7 +238,7 @@
       widgetId:  "356c6a614a59393139323835",
       tokenAuth: "479874Tz6YZockSUbu69273d6bP1",
       identifier: "",
-      exposeMethods: false,
+      exposeMethods: false, // default UI handles OTP screen
 
       success: function(data) {
         console.log("MSG91 success:", data);
@@ -420,7 +421,6 @@
           return;
         }
 
-        // Clear and populate
         select.innerHTML = "";
         const placeholder = document.createElement("option");
         placeholder.value = "";
@@ -434,7 +434,6 @@
           select.appendChild(opt);
         });
 
-        // Add OTHER option
         const optOther = document.createElement("option");
         optOther.value = "OTHER";
         optOther.textContent = "Other";
@@ -450,7 +449,6 @@
 
       } catch (e) {
         console.error("Error loading dealers:", e);
-        // Fallback to free text dealer
         dealerSelectGroup.classList.add("hidden");
         dealerOtherGroup.classList.remove("hidden");
       }
@@ -603,6 +601,8 @@
               <div><b>Serial No.:</b> ${r.sn}</div>
               <div><b>Model:</b> ${r.model || '-'}</div>
               <div><b>Purchase Date:</b> ${r.purchaseDDMMYYYY}</div>
+              <div><b>Warranty Period:</b> 24 months from date of purchase</div>
+              <div><b>Warranty Ends On:</b> ${r.warrantyExpiryDDMMYYYY || '-'}</div>
             </div>
             <div class="success-actions">
               <button id="pdf-btn" class="btn">${t('pdfBtn')}</button>
@@ -616,40 +616,99 @@
       });
     }
 
-    // Warranty PDF via jsPDF
+    // Warranty PDF via jsPDF – with logo & 24-month info
     function triggerWarrantyPdf(r) {
       const { jsPDF } = window.jspdf || {};
       if (!jsPDF) {
         alert("PDF library not loaded.");
         return;
       }
-      const doc = new jsPDF();
 
-      doc.setFontSize(18);
-      doc.text("Inpod Fans - Warranty Certificate", 105, 20, { align: "center" });
+      const doc = new jsPDF('p', 'mm', 'a4');
+      const pageWidth = doc.internal.pageSize.getWidth();
 
-      doc.setFontSize(11);
-      doc.text("Thank you for registering your Inpod Fans product.", 105, 30, { align: "center" });
+      const logoUrl = "https://inpodfans.com/images/logo/logo.svg";
 
-      doc.setFontSize(12);
-      let y = 45;
-      doc.text("Customer & Product Details:", 20, y); y += 8;
-      doc.text(`Serial No.: ${r.sn}`, 20, y); y += 7;
-      doc.text(`Model: ${r.model || "-"}`, 20, y); y += 7;
-      doc.text(`Purchase Date: ${r.purchaseDDMMYYYY}`, 20, y); y += 10;
+      function drawContent() {
+        // Header bar
+        doc.setFillColor(15, 23, 42);
+        doc.rect(0, 0, pageWidth, 24, 'F');
 
-      doc.text("Warranty Terms (summary):", 20, y); y += 7;
-      doc.setFontSize(10);
-      const terms = [
-        "1. Warranty is valid from the date of purchase as per the invoice.",
-        "2. Warranty covers manufacturing defects only.",
-        "3. Physical damage, improper installation or misuse is not covered.",
-        "4. For service, please contact Inpod Fans authorised centres."
-      ];
-      terms.forEach(line => { doc.text(line, 22, y); y += 6; });
+        doc.setTextColor(255, 255, 255);
+        doc.setFontSize(16);
+        doc.text("Inpod Fans – Warranty Certificate", pageWidth / 2, 16, { align: "center" });
 
-      const fileName = `Inpod_Warranty_${r.sn}.pdf`;
-      doc.save(fileName);
+        // Body
+        doc.setTextColor(0, 0, 0);
+        doc.setFontSize(12);
+        let y = 36;
+
+        doc.setFont(undefined, "bold");
+        doc.text("Customer & Product Details", 20, y);
+        doc.setFont(undefined, "normal");
+        y += 8;
+
+        doc.text(`Serial No. : ${r.sn}`, 20, y); y += 7;
+        doc.text(`Model      : ${r.model || "-"}`, 20, y); y += 7;
+        doc.text(`Purchase   : ${r.purchaseDDMMYYYY}`, 20, y); y += 7;
+        if (r.warrantyExpiryDDMMYYYY) {
+          doc.text(`Warranty   : 24 months from purchase`, 20, y); y += 7;
+          doc.text(`Valid Upto : ${r.warrantyExpiryDDMMYYYY}`, 20, y); y += 10;
+        } else {
+          doc.text(`Warranty   : 24 months from date of purchase`, 20, y); 
+          y += 10;
+        }
+
+        doc.setFont(undefined, "bold");
+        doc.text("Warranty Terms (Summary)", 20, y);
+        y += 7;
+        doc.setFont(undefined, "normal");
+        doc.setFontSize(10);
+
+        const terms = [
+          "• Warranty is valid for 24 months from the date of purchase as per the invoice.",
+          "• Warranty covers manufacturing defects in materials and workmanship only.",
+          "• Damage due to incorrect installation, mishandling, or misuse is not covered.",
+          "• For service, please contact authorised Inpod Fans service centres only.",
+          "• Warranty is valid only with a valid proof of purchase / invoice."
+        ];
+
+        terms.forEach(line => {
+          const split = doc.splitTextToSize(line, pageWidth - 40);
+          doc.text(split, 20, y);
+          y += split.length * 5 + 2;
+        });
+
+        y += 6;
+        doc.setFontSize(9);
+        doc.setTextColor(100, 116, 139);
+        doc.text("This is a computer generated warranty document and does not require a signature.", 20, y);
+
+        const fileName = `Inpod_Warranty_${r.sn}.pdf`;
+        doc.save(fileName);
+      }
+
+      const img = new Image();
+      img.crossOrigin = "Anonymous";
+      img.onload = function () {
+        try {
+          const canvas = document.createElement("canvas");
+          canvas.width = img.width;
+          canvas.height = img.height;
+          const ctx = canvas.getContext("2d");
+          ctx.drawImage(img, 0, 0);
+
+          const imgData = canvas.toDataURL("image/png");
+          doc.addImage(imgData, "PNG", 12, 6, 24, 12);
+        } catch (e) {
+          console.warn("Logo draw failed, continuing without image:", e);
+        }
+        drawContent();
+      };
+      img.onerror = function () {
+        drawContent();
+      };
+      img.src = logoUrl;
     }
   </script>
 </body>
